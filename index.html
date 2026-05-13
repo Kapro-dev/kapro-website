@@ -7,10 +7,10 @@
   <meta name="description" content="Purpose-built progressive delivery and promotion engine for sovereign fleet GitOps at global scale.">
   <meta property="og:title" content="Kapro - The Canonical Promotion Layer for Kubernetes">
   <meta property="og:description" content="Purpose-built progressive delivery and promotion engine for sovereign fleet GitOps at global scale.">
-  <meta property="og:image" content="https://kapro.dev/logo.png">
+  <meta property="og:image" content="https://kapro.dev/assets/images/logo.png">
   <meta property="og:url" content="https://kapro.dev">
   <meta name="twitter:card" content="summary_large_image">
-  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="icon" type="image/png" href="assets/images/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -496,7 +496,7 @@
   <nav class="nav" id="nav">
     <div class="nav-inner">
       <a href="#" class="nav-brand">
-        <img src="logo.png" alt="Kapro"> Kapro
+        <img src="assets/images/logo.png" alt="Kapro"> Kapro
       </a>
       <div class="nav-links">
         <a href="#problem">Problem</a>
@@ -513,7 +513,7 @@
   <!-- Hero -->
   <div class="hero">
     <div class="hero-logo">
-      <img src="logo.png" alt="Kapro">
+      <img src="assets/images/logo.png" alt="Kapro">
     </div>
     <h1>Kapro</h1>
     <p class="subtitle">The canonical promotion layer for Kubernetes.<br>Progressive delivery and promotion engine for multi-cluster Kubernetes fleets.</p>
@@ -533,7 +533,7 @@
       <span class="section-label">The Problem</span>
       <h2>The Fleet-Scale Imperative</h2>
       <p>Sovereign hubs. Edge locations at true distributed scale. Zero tolerance for centralized runtime coordination, because centralized orchestration is a single point of failure. When deploying at this magnitude, standard CI/CD pipelines collapse under the weight of drift, state, and sheer volume.</p>
-      <img src="fleet-scale.png" alt="The fleet-scale imperative">
+      <img src="assets/images/fleet-scale.png" alt="The fleet-scale imperative">
     </div>
 
     <div class="divider"></div>
@@ -542,7 +542,7 @@
       <span class="section-label">The Breakdown</span>
       <h2>Why Sequential Pipelines Break</h2>
       <p>Traditional CI/CD assumes a linear world: build, test, deploy. But when services have strict ordering dependencies, databases need lifecycle management and drift correction, and every cluster must continuously self-verify against its source of truth, sequential pipelines simply cannot express this.</p>
-      <img src="sequential-pipelines-break.png" alt="Why sequential pipelines break">
+      <img src="assets/images/sequential-pipelines-break.png" alt="Why sequential pipelines break">
     </div>
 
     <div class="divider"></div>
@@ -551,7 +551,7 @@
       <span class="section-label">The Gap</span>
       <h2>The Missing Link in Global GitOps</h2>
       <p>You have a centralized OCI artifact registry. You have edge clusters running Flux, Helm, and Kustomize. But between those two ends, three questions remain unanswered: How do you stage rollouts? How do you manage cross-cluster canaries? How do you validate state before promotion?</p>
-      <img src="missing-link.png" alt="The missing link in global GitOps">
+      <img src="assets/images/missing-link.png" alt="The missing link in global GitOps">
     </div>
 
     <div class="divider"></div>
@@ -560,7 +560,7 @@
       <span class="section-label">The Foundation</span>
       <h2>The Artifact is the Contract</h2>
       <p>Kapro decouples CI from deployment. The OCI artifact becomes the single source of runtime truth: immutable tags only. Any git repo, any CI pipeline can produce it. By making the OCI artifact the contract, CI stops being the deployment orchestrator. Runtime git dependency drops to zero.</p>
-      <img src="artifact-contract.png" alt="The artifact is the contract">
+      <img src="assets/images/artifact-contract.png" alt="The artifact is the contract">
     </div>
 
     <div class="divider"></div>
@@ -570,7 +570,7 @@
       <span class="section-label">The Answer</span>
       <h2>Enter Kapro</h2>
       <p>Kapro doesn't replace the CNCF ecosystem. It choreographs it. An open-source orchestrator built to manage the complex state of modern sovereign fleets, sitting at the center of Kubernetes Operators, Helm, Kustomize, OCI registries, and GitOps reconciliation loops.</p>
-      <img src="kapro-ecosystem.png" alt="Kapro: the CNCF-native promotion engine">
+      <img src="assets/images/kapro-ecosystem.png" alt="Kapro: the CNCF-native promotion engine">
     </div>
 
     <div class="divider"></div>
@@ -578,7 +578,7 @@
     <div class="section">
       <span class="section-label">How It Works</span>
       <h2>The Mechanics of Promotion</h2>
-      <img src="promotion-mechanics.png" alt="The mechanics of promotion">
+      <img src="assets/images/promotion-mechanics.png" alt="The mechanics of promotion">
       <ul class="features">
         <li><strong>Intra-cluster blue/green.</strong> Seamless traffic cutover within cluster boundary. Rollbacks are instant routing flips, not redeployments.</li>
         <li><strong>Inter-cluster canary.</strong> Progressive rollout with health gates across regions. Pilot clusters first, then regional waves, then the global fleet.</li>
@@ -592,7 +592,7 @@
       <span class="section-label">Reliability</span>
       <h2>Autonomous Operations</h2>
       <p>Kapro manages wave-based dependsOn execution across CRDs, operators, state, apps, and ingress. Automated health gates ensure that if a check or canary fails, the rollout halts. Zero fleet-wide bad deployments.</p>
-      <img src="autonomous-operations.png" alt="Autonomous operations and bulletproof reliability">
+      <img src="assets/images/autonomous-operations.png" alt="Autonomous operations and bulletproof reliability">
     </div>
 
     <div class="divider"></div>
@@ -680,7 +680,7 @@
   <!-- Footer -->
   <div class="footer">
     <div class="footer-brand">
-      <img src="logo.png" alt="Kapro"> <strong>Kapro</strong>
+      <img src="assets/images/logo.png" alt="Kapro"> <strong>Kapro</strong>
     </div>
     <p>Apache 2.0 &middot; <a href="https://github.com/Kapro-dev/kapro">GitHub</a> &middot; <a href="https://github.com/Kapro-dev/kapro/blob/main/docs/SPEC.md">Spec</a> &middot; <a href="https://github.com/Kapro-dev/kapro/blob/main/docs/ROADMAP.md">Roadmap</a></p>
   </div>
