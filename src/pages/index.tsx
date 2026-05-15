@@ -10,9 +10,9 @@ import styles from './index.module.css';
 const gates = ['Signature', 'Metrics', 'Soak', 'Approval'];
 
 const waves = [
-  {name: 'Wave 1', scope: 'canary', status: 'verified', active: 4},
-  {name: 'Wave 2', scope: 'regional', status: 'soaking', active: 3},
-  {name: 'Wave 3', scope: 'global', status: 'queued', active: 1},
+  {name: 'Wave 1', scope: 'canary', status: 'verified', active: 3},
+  {name: 'Wave 2', scope: 'regional', status: 'soaking', active: 2},
+  {name: 'Wave 3', scope: 'global', status: 'queued', active: 0},
 ];
 
 function KubernetesMark() {
@@ -62,63 +62,63 @@ function HomepageHeader() {
             </div>
           </div>
 
-          <div className={styles.flowCanvas}>
-            <div className={styles.pipelineRow}>
-              <div className={styles.artifactCard}>
+          <div className={styles.controlPlane}>
+            <div className={styles.pipelineTrack} aria-label="Kapro release pipeline">
+              <div className={styles.stageCard}>
                 <span className={styles.cardLabel}>Artifact</span>
-                <strong>OCI image</strong>
-                <code>sha256:9f4a</code>
+                <strong>catalog-api</strong>
+                <code>v1.8.2</code>
               </div>
 
-              <span className={styles.flowRail} aria-hidden="true">
-                <span className={styles.flowPacket} />
-              </span>
+              <div className={styles.stageConnector} aria-hidden="true">
+                <span />
+              </div>
 
-              <div className={styles.gatesCard}>
-                <span className={styles.cardLabel}>Gate policy</span>
-                <div className={styles.gateList}>
+              <div className={clsx(styles.stageCard, styles.gateStage)}>
+                <span className={styles.cardLabel}>Gates</span>
+                <div className={styles.gatePills}>
                   {gates.map((gate, index) => (
-                    <span className={styles.gate} key={gate} style={{animationDelay: `${index * 0.45}s`}}>
-                      <span className={styles.check}>✓</span>
+                    <span className={styles.gatePill} key={gate} style={{animationDelay: `${index * 0.35}s`}}>
                       {gate}
                     </span>
                   ))}
                 </div>
               </div>
 
-              <span className={styles.flowRail} aria-hidden="true">
-                <span className={styles.flowPacket} />
-              </span>
+              <div className={styles.stageConnector} aria-hidden="true">
+                <span />
+              </div>
 
-              <div className={styles.hubNode}>
+              <div className={clsx(styles.stageCard, styles.hubStage)}>
                 <KubernetesMark />
-                <span>Kapro Hub</span>
+                <strong>Kapro Hub</strong>
+                <span>decision loop</span>
               </div>
             </div>
 
-            <div className={styles.fanoutRail} aria-hidden="true">
-              <span />
-              <span />
-              <span />
-            </div>
-
-            <div className={styles.waveStack}>
+            <div className={styles.waveLanes}>
               {waves.map((wave, waveIndex) => (
-                <div className={styles.wave} key={wave.name}>
-                  <div>
+                <div className={styles.waveLane} key={wave.name}>
+                  <div className={styles.waveMeta}>
                     <span className={styles.waveLabel}>{wave.name}</span>
                     <span className={styles.waveScope}>{wave.scope}</span>
                   </div>
+
+                  <div className={styles.laneLine} aria-hidden="true">
+                    <span style={{animationDelay: `${waveIndex * 0.5}s`}} />
+                  </div>
+
                   <div className={styles.clusterGrid} aria-label={`${wave.name} ${wave.scope} clusters`}>
-                    {Array.from({length: 5}).map((_, clusterIndex) => (
+                    {Array.from({length: 4}).map((_, clusterIndex) => (
                       <span
                         className={clsx(styles.clusterNode, clusterIndex < wave.active && styles.clusterNodeActive)}
                         key={clusterIndex}
-                        style={{animationDelay: `${waveIndex * 0.7 + clusterIndex * 0.16}s`}}>
+                        style={{animationDelay: `${waveIndex * 0.55 + clusterIndex * 0.14}s`}}>
                         <KubernetesMark />
                       </span>
                     ))}
                   </div>
+
                   <span className={clsx(styles.waveStatus, wave.status === 'queued' && styles.waveStatusQueued)}>
                     {wave.status}
                   </span>

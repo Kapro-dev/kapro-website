@@ -8,8 +8,8 @@
 .heroInner {
   align-items: center;
   display: grid;
-  gap: 3rem;
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 440px);
+  gap: 2.5rem;
+  grid-template-columns: minmax(0, 0.9fr) minmax(480px, 1.1fr);
   position: relative;
   z-index: 1;
 }
@@ -107,46 +107,51 @@
   width: 72px;
 }
 
-.flowCanvas {
+.controlPlane {
+  background:
+    linear-gradient(rgba(37, 99, 235, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37, 99, 235, 0.04) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(243, 246, 251, 0.72));
+  background-size: 28px 28px, 28px 28px, 100% 100%;
+  border: 1px solid #dbe4ef;
+  border-radius: 8px;
   display: grid;
-  gap: 1rem;
+  gap: 1.15rem;
   margin-top: 0.85rem;
-  position: relative;
+  padding: 1rem;
 }
 
-.pipelineRow {
+.pipelineTrack {
   align-items: stretch;
   display: grid;
-  gap: 0.55rem;
-  grid-template-columns: minmax(86px, 0.9fr) 24px minmax(132px, 1.25fr) 24px minmax(86px, 0.95fr);
+  gap: 0.65rem;
+  grid-template-columns: minmax(112px, 0.95fr) 36px minmax(180px, 1.35fr) 36px minmax(120px, 1fr);
 }
 
-.artifactCard,
-.gatesCard {
+.stageCard {
   background: #ffffff;
   border: 1px solid #dbe4ef;
   border-radius: 8px;
   box-shadow: 0 12px 34px rgba(23, 32, 51, 0.06);
-  padding: 0.85rem;
-}
-
-.artifactCard {
   min-width: 0;
+  padding: 0.9rem;
 }
 
-.artifactCard strong,
-.gatesCard strong {
+.stageCard strong {
   color: #172033;
+  display: block;
+  font-size: 0.92rem;
+  line-height: 1.2;
 }
 
-.artifactCard code {
+.stageCard code {
   background: #eaf1fb;
   border: 1px solid rgba(37, 99, 235, 0.12);
   border-radius: 5px;
   color: #17324d;
   display: inline-block;
-  font-size: 0.7rem;
-  margin-top: 0.45rem;
+  font-size: 0.72rem;
+  margin-top: 0.5rem;
   padding: 0.12rem 0.35rem;
   word-break: keep-all;
 }
@@ -161,58 +166,49 @@
   text-transform: uppercase;
 }
 
-.gatesCard {
-  min-width: 0;
-}
-
-.gateList {
-  display: grid;
-  gap: 0.45rem;
-}
-
-.gate {
-  align-items: center;
-  color: #536173;
+.gatePills {
   display: flex;
-  font-size: 0.78rem;
-  font-weight: 700;
-  gap: 0.45rem;
-  opacity: 0.74;
-  animation: gatePass 4.8s ease-in-out infinite;
+  flex-wrap: wrap;
+  gap: 0.38rem;
 }
 
-.check {
+.gatePill {
   align-items: center;
+  animation: gatePass 4.8s ease-in-out infinite;
   background: #e5f6f1;
   border: 1px solid #a6ddce;
   border-radius: 999px;
   color: #0f8a6a;
-  display: inline-flex;
-  font-size: 0.68rem;
-  height: 1.05rem;
-  justify-content: center;
-  width: 1.05rem;
+  display: flex;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 0.25rem 0.45rem;
 }
 
-.hubNode {
+.hubStage {
   align-items: center;
   background: #172033;
   border: 1px solid rgba(23, 32, 51, 0.18);
-  border-radius: 8px;
   box-shadow: 0 18px 42px rgba(23, 32, 51, 0.18);
   color: #ffffff;
   display: flex;
   flex-direction: column;
-  font-size: 0.76rem;
-  font-weight: 800;
   gap: 0.35rem;
   justify-content: center;
-  min-height: 100%;
-  min-width: 0;
   text-align: center;
 }
 
-.hubNode .kubeMark {
+.hubStage strong {
+  color: #ffffff;
+}
+
+.hubStage span {
+  color: #b9c7db;
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.hubStage .kubeMark {
   height: 34px;
   width: 34px;
 }
@@ -231,22 +227,25 @@
   stroke-width: 4;
 }
 
-.waveStack {
+.waveLanes {
   display: grid;
   gap: 0.7rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.wave {
-  align-content: start;
+.waveLane {
+  align-items: center;
   background: #ffffff;
   border: 1px solid #dbe4ef;
   border-radius: 8px;
   display: grid;
-  gap: 0.7rem;
-  grid-template-columns: 1fr;
-  padding: 0.7rem;
+  gap: 0.75rem;
+  grid-template-columns: 82px minmax(42px, 0.55fr) minmax(132px, 1fr) 72px;
+  min-width: 0;
+  padding: 0.72rem 0.8rem;
   box-shadow: 0 10px 26px rgba(23, 32, 51, 0.05);
+}
+
+.waveMeta {
   min-width: 0;
 }
 
@@ -268,8 +267,8 @@
 
 .clusterGrid {
   display: grid;
-  gap: 0.36rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.42rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .clusterNode {
@@ -294,7 +293,7 @@
   color: #0f8a6a;
   font-size: 0.7rem;
   font-weight: 800;
-  text-align: left;
+  text-align: right;
   text-transform: uppercase;
 }
 
@@ -302,14 +301,14 @@
   color: #728197;
 }
 
-.flowRail {
+.stageConnector {
   align-items: center;
   display: flex;
   min-width: 0;
   position: relative;
 }
 
-.flowRail::before {
+.stageConnector::before {
   background: repeating-linear-gradient(
     90deg,
     rgba(37, 99, 235, 0.34) 0,
@@ -322,7 +321,7 @@
   width: 100%;
 }
 
-.flowRail::after {
+.stageConnector::after {
   border-bottom: 5px solid transparent;
   border-left: 7px solid rgba(37, 99, 235, 0.5);
   border-top: 5px solid transparent;
@@ -331,7 +330,7 @@
   right: 0;
 }
 
-.flowPacket {
+.stageConnector span {
   animation: railPacket 2.8s ease-in-out infinite;
   background: #2563eb;
   border-radius: 999px;
@@ -342,47 +341,52 @@
   width: 7px;
 }
 
-.fanoutRail {
-  display: grid;
-  gap: 0.7rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  height: 22px;
-  margin: -0.1rem 0 -0.25rem;
-}
-
-.fanoutRail span {
-  align-items: center;
-  display: flex;
-  justify-content: center;
+.laneLine {
+  height: 2px;
+  min-width: 0;
   position: relative;
 }
 
-.fanoutRail span::before {
-  background: rgba(15, 138, 106, 0.38);
+.laneLine::before {
+  background: linear-gradient(90deg, rgba(37, 99, 235, 0.3), rgba(15, 138, 106, 0.35));
   content: "";
-  height: 100%;
-  width: 2px;
+  height: 2px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 50%;
 }
 
-.fanoutRail span::after {
+.laneLine::after {
+  border-bottom: 5px solid transparent;
+  border-left: 7px solid rgba(15, 138, 106, 0.58);
+  border-top: 5px solid transparent;
+  content: "";
+  position: absolute;
+  right: 0;
+  top: calc(50% - 4px);
+}
+
+.laneLine span {
+  animation: railPacket 3.2s ease-in-out infinite;
   background: #0f8a6a;
   border-radius: 999px;
-  content: "";
+  box-shadow: 0 0 10px rgba(15, 138, 106, 0.36);
   height: 7px;
+  left: 0;
   position: absolute;
-  top: 2px;
+  top: calc(50% - 3px);
   width: 7px;
-  animation: fanoutPulse 2.6s ease-in-out infinite;
 }
 
 @keyframes gatePass {
   0%, 100% {
-    opacity: 0.62;
-    transform: translateX(0);
+    opacity: 0.72;
+    transform: translateY(0);
   }
   45%, 62% {
     opacity: 1;
-    transform: translateX(3px);
+    transform: translateY(-1px);
   }
 }
 
@@ -396,18 +400,7 @@
   }
   100% {
     opacity: 0;
-    transform: translateX(18px);
-  }
-}
-
-@keyframes fanoutPulse {
-  0%, 100% {
-    opacity: 0.35;
-    transform: translateY(0);
-  }
-  50% {
-    opacity: 1;
-    transform: translateY(10px);
+    transform: translateX(32px);
   }
 }
 
@@ -422,9 +415,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .flowPacket,
-  .fanoutRail span::after,
-  .gate,
+  .stageConnector span,
+  .laneLine span,
+  .gatePill,
   .clusterNodeActive {
     animation: none;
   }
@@ -455,42 +448,63 @@
   }
 
   .heroVisual {
-    max-width: 520px;
+    max-width: 640px;
     margin: 0 auto;
   }
 }
 
 @media screen and (max-width: 520px) {
-  .pipelineRow {
+  .pipelineTrack {
     grid-template-columns: 1fr;
   }
 
-  .flowRail {
+  .stageConnector {
     height: 20px;
     justify-content: center;
   }
 
-  .flowRail::before {
+  .stageConnector::before {
     height: 100%;
     width: 2px;
   }
 
-  .flowRail::after {
+  .stageConnector::after {
     bottom: 0;
     left: calc(50% - 5px);
     right: auto;
     transform: rotate(90deg);
   }
 
-  .flowPacket {
+  .stageConnector span {
     left: calc(50% - 3px);
   }
 
-  .fanoutRail {
-    display: none;
+  .waveLane {
+    grid-template-columns: 1fr;
   }
 
-  .waveStack {
-    grid-template-columns: 1fr;
+  .laneLine {
+    height: 18px;
+    justify-self: center;
+    width: 2px;
+  }
+
+  .laneLine::before {
+    bottom: 0;
+    height: 100%;
+    right: auto;
+    top: 0;
+    width: 2px;
+  }
+
+  .laneLine::after {
+    bottom: 0;
+    right: -3px;
+    top: auto;
+    transform: rotate(90deg);
+  }
+
+  .waveStatus {
+    text-align: left;
   }
 }
