@@ -73,28 +73,205 @@
   border: 1px solid #dbe4ef;
   border-radius: 8px;
   box-shadow: 0 24px 70px rgba(23, 32, 51, 0.1);
-  padding: 1.25rem;
+  overflow: hidden;
+  padding: 1rem;
 }
 
-.logoPanel {
+.visualHeader {
   align-items: center;
-  background: #f3f6fb;
+  background: rgba(243, 246, 251, 0.88);
   border: 1px solid #dbe4ef;
   border-radius: 8px;
   display: flex;
-  justify-content: center;
-  min-height: 190px;
+  gap: 0.8rem;
+  padding: 0.75rem;
+}
+
+.visualHeader strong {
+  color: #172033;
+  display: block;
+  font-size: 0.95rem;
+}
+
+.visualKicker {
+  color: #728197;
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
 }
 
 .heroLogo {
   height: auto;
-  width: min(230px, 70%);
+  width: 72px;
 }
 
-.promotionPanel {
+.flowCanvas {
+  height: 360px;
+  margin-top: 0.85rem;
+  position: relative;
+}
+
+.signalSvg {
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.signalPath {
+  fill: none;
+  stroke: rgba(37, 99, 235, 0.26);
+  stroke-dasharray: 8 8;
+  stroke-width: 2;
+  animation: dashFlow 7s linear infinite;
+}
+
+.signalPacket,
+.signalPacketTwo {
+  fill: #2563eb;
+  filter: drop-shadow(0 0 8px rgba(37, 99, 235, 0.38));
+  offset-path: path("M56 70 C120 70 126 130 190 130 S280 130 330 86");
+  animation: packetFlow 5.4s ease-in-out infinite;
+}
+
+.signalPacketTwo {
+  fill: #0f8a6a;
+  offset-path: path("M210 212 C260 212 284 220 340 220");
+  animation-delay: 1.2s;
+}
+
+.artifactCard,
+.gatesCard,
+.hubNode,
+.waveStack {
+  position: absolute;
+  z-index: 1;
+}
+
+.artifactCard,
+.gatesCard {
+  background: #ffffff;
+  border: 1px solid #dbe4ef;
+  border-radius: 8px;
+  box-shadow: 0 12px 34px rgba(23, 32, 51, 0.06);
+  padding: 0.85rem;
+}
+
+.artifactCard {
+  left: 0;
+  top: 18px;
+  width: 140px;
+}
+
+.artifactCard strong,
+.gatesCard strong {
+  color: #172033;
+}
+
+.artifactCard code {
+  background: #eaf1fb;
+  border: 1px solid rgba(37, 99, 235, 0.12);
+  border-radius: 5px;
+  color: #17324d;
+  display: inline-block;
+  font-size: 0.73rem;
+  margin-top: 0.45rem;
+  padding: 0.12rem 0.35rem;
+}
+
+.cardLabel {
+  color: #728197;
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  margin-bottom: 0.3rem;
+  text-transform: uppercase;
+}
+
+.gatesCard {
+  left: 108px;
+  top: 108px;
+  width: 164px;
+}
+
+.gateList {
   display: grid;
-  gap: 0.75rem;
-  margin-top: 1rem;
+  gap: 0.45rem;
+}
+
+.gate {
+  align-items: center;
+  color: #536173;
+  display: flex;
+  font-size: 0.78rem;
+  font-weight: 700;
+  gap: 0.45rem;
+  opacity: 0.74;
+  animation: gatePass 4.8s ease-in-out infinite;
+}
+
+.check {
+  align-items: center;
+  background: #e5f6f1;
+  border: 1px solid #a6ddce;
+  border-radius: 999px;
+  color: #0f8a6a;
+  display: inline-flex;
+  font-size: 0.68rem;
+  height: 1.05rem;
+  justify-content: center;
+  width: 1.05rem;
+}
+
+.hubNode {
+  align-items: center;
+  background: #172033;
+  border: 1px solid rgba(23, 32, 51, 0.18);
+  border-radius: 8px;
+  box-shadow: 0 18px 42px rgba(23, 32, 51, 0.18);
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  font-size: 0.76rem;
+  font-weight: 800;
+  gap: 0.35rem;
+  justify-content: center;
+  left: 286px;
+  min-height: 84px;
+  top: 42px;
+  width: 104px;
+}
+
+.hubNode .kubeMark {
+  height: 34px;
+  width: 34px;
+}
+
+.kubeMark {
+  height: 18px;
+  width: 18px;
+}
+
+.kubeMark path,
+.kubeMark circle {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 4;
+}
+
+.waveStack {
+  bottom: 0;
+  display: grid;
+  gap: 0.55rem;
+  right: 0;
+  width: min(100%, 330px);
 }
 
 .wave {
@@ -103,50 +280,112 @@
   border: 1px solid #dbe4ef;
   border-radius: 8px;
   display: grid;
-  gap: 0.85rem;
-  grid-template-columns: 84px 1fr 72px;
-  padding: 0.82rem;
+  gap: 0.7rem;
+  grid-template-columns: 70px 1fr 62px;
+  padding: 0.7rem;
+  box-shadow: 0 10px 26px rgba(23, 32, 51, 0.05);
 }
 
 .waveLabel {
   color: #172033;
-  font-size: 0.83rem;
+  display: block;
+  font-size: 0.78rem;
   font-weight: 800;
 }
 
-.clusterDots {
-  display: flex;
-  gap: 0.42rem;
+.waveScope {
+  color: #728197;
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 750;
+  margin-top: 0.05rem;
+  text-transform: uppercase;
 }
 
-.dot {
-  background: #d8e6fb;
-  border: 1px solid #b9cef2;
-  border-radius: 999px;
-  height: 13px;
-  width: 13px;
+.clusterGrid {
+  display: grid;
+  gap: 0.36rem;
+  grid-template-columns: repeat(5, 1fr);
 }
 
-.dotActive {
-  animation: pulse 2.4s ease-in-out infinite;
-  background: #0f8a6a;
-  border-color: #0f8a6a;
-  box-shadow: 0 0 0 5px rgba(15, 138, 106, 0.11);
+.clusterNode {
+  align-items: center;
+  background: #eef4ff;
+  border: 1px solid #c9d9f7;
+  border-radius: 7px;
+  color: #7d91b2;
+  display: inline-flex;
+  height: 28px;
+  justify-content: center;
+}
+
+.clusterNodeActive {
+  animation: clusterReady 3.6s ease-in-out infinite;
+  background: #e5f6f1;
+  border-color: #a6ddce;
+  color: #0f8a6a;
 }
 
 .waveStatus {
   color: #0f8a6a;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 800;
   text-align: right;
+  text-transform: uppercase;
 }
 
-@keyframes pulse {
+.waveStatusQueued {
+  color: #728197;
+}
+
+@keyframes dashFlow {
+  to {
+    stroke-dashoffset: -160;
+  }
+}
+
+@keyframes packetFlow {
+  0% {
+    offset-distance: 0%;
+    opacity: 0;
+  }
+  12%, 82% {
+    opacity: 1;
+  }
+  100% {
+    offset-distance: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes gatePass {
+  0%, 100% {
+    opacity: 0.62;
+    transform: translateX(0);
+  }
+  45%, 62% {
+    opacity: 1;
+    transform: translateX(3px);
+  }
+}
+
+@keyframes clusterReady {
   0%, 100% {
     transform: scale(1);
   }
   50% {
-    transform: scale(1.16);
+    box-shadow: 0 0 0 5px rgba(15, 138, 106, 0.1);
+    transform: scale(1.08);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .signalPath,
+  .signalPacket,
+  .signalPacketTwo,
+  .gate,
+  .clusterNodeActive {
+    animation: none;
   }
 }
 
@@ -173,9 +412,45 @@
   .buttons {
     justify-content: center;
   }
+
+  .heroVisual {
+    max-width: 520px;
+    margin: 0 auto;
+  }
 }
 
 @media screen and (max-width: 520px) {
+  .flowCanvas {
+    height: auto;
+  }
+
+  .signalSvg {
+    display: none;
+  }
+
+  .artifactCard,
+  .gatesCard,
+  .hubNode,
+  .waveStack {
+    position: static;
+  }
+
+  .flowCanvas {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .artifactCard,
+  .gatesCard,
+  .hubNode,
+  .waveStack {
+    width: 100%;
+  }
+
+  .hubNode {
+    min-height: 72px;
+  }
+
   .wave {
     grid-template-columns: 70px 1fr;
   }
