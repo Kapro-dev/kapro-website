@@ -344,3 +344,47 @@ code {
   color: #e2e8f0;
   border-color: rgba(96, 165, 250, 0.15);
 }
+
+/* ---- Force background on all pages ---- */
+html, body {
+  background-color: #F3F6FB !important;
+}
+
+[data-theme='dark'] html,
+[data-theme='dark'] body {
+  background-color: #0f172a !important;
+}
+
+/* Doc page main content area */
+.main-wrapper {
+  background-color: #F3F6FB;
+}
+
+[data-theme='dark'] .main-wrapper {
+  background-color: #0f172a;
+}
+
+/* Feature section on homepage */
+.features_t9lD,
+section[class*="features"] {
+  background-color: #F3F6FB;
+}
+
+/* Ensure all doc article text is dark */
+article {
+  color: #334155;
+}
+
+article h1, article h2, article h3, article h4 {
+  color: #0f172a;
+}
+
+[data-theme='dark'] article {
+  color: #e2e8f0;
+}
+
+[data-theme='dark'] article h1,
+[data-theme='dark'] article h2,
+[data-theme='dark'] article h3 {
+  color: #f8fafc;
+}
