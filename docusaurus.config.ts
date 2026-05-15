@@ -4,7 +4,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
   title: 'Kapro',
-  tagline: 'Progressive delivery and promotion engine for multi-cluster Kubernetes fleets',
+  tagline: 'Kubernetes-native fleet promotion for multi-cluster platforms',
   favicon: 'img/favicon.ico',
 
   future: {

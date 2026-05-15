@@ -4,40 +4,42 @@ sidebar_position: 4
 
 # Gates
 
-A gate is a stateless evaluator that answers: "May this target advance to the next FSM phase?"
+A gate is a policy check that answers one question:
 
-## Interface
+> May this target advance to the next phase?
 
-```go
-type Gate interface {
-    Evaluate(ctx context.Context, req Request) (Result, error)
-}
-```
+Gates do not run the release. They evaluate evidence. The `ReleaseReconciler` owns timing, retries, failure policy, and phase transitions.
 
-`Result.Phase` is one of `Passed`, `Failed`, `Running`, or `Inconclusive`. All timing, retry, and failure policy live in the ReleaseReconciler -- the gate just evaluates and returns.
+<div class="kapro-diagram">
+  <div class="kapro-flow">
+    <div class="kapro-node"><strong>Target selected</strong><span>A stage binds a cluster into the release.</span></div>
+    <div class="kapro-node"><strong>Gate evaluates</strong><span>Signature, health, metrics, soak, approval, or custom policy.</span></div>
+    <div class="kapro-node"><strong>Evidence recorded</strong><span>Result is stored in `ReleaseTarget.status.gates[]`.</span></div>
+    <div class="kapro-node"><strong>Advance or stop</strong><span>Policy decides pass, retry, fail, continue, or rollback.</span></div>
+  </div>
+</div>
 
-## Built-in Gates
+## Built-In Gates
 
-| Gate | Activation | Description |
-|------|-----------|-------------|
-| `soak` | `Stage.gate.soakTime` is set | Time-based gate. Target must remain in the Soaking phase for the configured duration. |
-| `metrics` | `Stage.gate.metrics` has queries | Evaluates Prometheus queries. All queries must return passing values. |
-| `approval` | `Stage.approval.required` is true | Checks for an `Approval` CR with the deterministic name `<release>-<target>`. |
-| `verification` | `Stage.gate.verification` is configured | Validates OCI artifact signatures using cosign. |
+| Gate | When it runs | What it protects |
+|------|--------------|------------------|
+| `verification` | Signature policy is configured. | Prevents unsigned or untrusted artifacts from promotion. |
+| `health` | Target health is required. | Avoids sending changes to unhealthy or stale clusters. |
+| `metrics` | Prometheus queries are configured. | Blocks promotion when error rates, latency, or SLO burn are unsafe. |
+| `soak` | `soakTime` is set. | Requires observation time before a wave is considered safe. |
+| `approval` | Approval is required. | Adds an explicit human decision before sensitive targets advance. |
 
-## Template Gates
+## Gate Composition
 
-Template gates use a `GateTemplate` CRD and support multiple dispatch mechanisms:
+<div class="kapro-diagram">
+  <div class="kapro-grid">
+    <div class="kapro-card"><strong>Automated evidence</strong><span>Metrics, health, signature checks, CEL expressions, Jobs, and webhooks.</span></div>
+    <div class="kapro-card"><strong>Human judgment</strong><span>Approvals for regulated regions, production stages, or risky releases.</span></div>
+    <div class="kapro-card"><strong>Failure policy</strong><span>Fail, continue with evidence, retry, or rollback depending on stage policy.</span></div>
+  </div>
+</div>
 
-| Type | Description |
-|------|-------------|
-| `cel` | Evaluate a CEL expression against target and release context. |
-| `job` | Run a Kubernetes Job and check its exit code. |
-| `webhook` | Call an external HTTP endpoint and check the response. |
-
-## Gate Policy
-
-Gates are configured per-stage in the Pipeline:
+## Example Policy
 
 ```yaml
 stages:
@@ -59,19 +61,8 @@ stages:
         - sre-team
 ```
 
-## Failure Handling
-
-Each gate supports failure policies:
-
-- **onFailure: fail** (default) -- The target transitions to Failed.
-- **onFailure: continue** -- The gate failure is recorded but the target advances.
-- **onFailure: rollback** -- The target is rolled back to the previous version.
-
-Gate state is persisted in `ReleaseTarget.status.gates[]` in etcd. Controller restarts do not lose gate progress.
+The important point is that gate evidence is persisted. A controller restart does not lose the fact that a target is waiting for approval, soaking, or blocked by a metric.
 
 ## Plugin Gates
 
-External gates can be implemented as gRPC plugins using the KGI (Kapro Gate Interface) contract:
-
-- Proto definition: `spec/kgi/v1alpha1/gate.proto`
-- Conformance suite: `conformance/gate/`
+External gates can be implemented through the Kapro Gate Interface (KGI). Use this when the safety decision depends on a system Kapro should not embed directly, such as a risk engine, change-management system, or internal SLO service.

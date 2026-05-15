@@ -29,17 +29,19 @@
 
 .heroTitle {
   color: #172033;
-  font-size: clamp(2.5rem, 5vw, 4.75rem);
-  font-weight: 850;
+  font-family: "Inter", "SF Pro Display", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: clamp(2.65rem, 5vw, 5rem);
+  font-weight: 820;
   letter-spacing: 0;
-  line-height: 0.98;
+  line-height: 0.96;
   margin: 0;
 }
 
 .heroSubtitle {
   color: #536173;
-  font-size: 1.28rem;
-  line-height: 1.58;
+  font-size: 1.22rem;
+  font-weight: 460;
+  line-height: 1.62;
   margin: 1.25rem 0 0;
   max-width: 680px;
 }

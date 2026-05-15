@@ -4,48 +4,50 @@ sidebar_position: 3
 
 # Actuators
 
-An actuator drives the "apply this version to this cluster" step. It is the bridge between Kapro's promotion decisions and the actual delivery backend.
+An actuator is the bridge between Kapro's promotion decision and the delivery backend that applies the version.
 
-## Interface
+Kapro decides **when** a cluster may receive a version. The actuator decides **how** to ask the local delivery system to converge.
 
-```go
-type Actuator interface {
-    Apply(ctx context.Context, req ApplyRequest) error
-    IsConverged(ctx context.Context, cluster *MemberCluster, version, appKey string) (bool, error)
-    Rollback(ctx context.Context, cluster *MemberCluster, previousVersion, appKey string) error
-    ApplyDelta(ctx context.Context, req DeltaApplyRequest) (int, error)
-    IsAllConverged(ctx context.Context, cluster *MemberCluster, desiredVersions map[string]string) (bool, error)
-}
-```
+<div class="kapro-diagram">
+  <div class="kapro-flow">
+    <div class="kapro-node"><strong>Kapro decision</strong><span>Target is allowed to receive version `v1.8.2`.</span></div>
+    <div class="kapro-node"><strong>Actuator apply</strong><span>Patch Flux, Argo CD, Helm, or a plugin backend.</span></div>
+    <div class="kapro-node"><strong>Local reconcile</strong><span>The backend applies manifests and workloads converge.</span></div>
+    <div class="kapro-node"><strong>Status report</strong><span>Convergence is written back to Kapro status.</span></div>
+  </div>
+</div>
 
-## Mode and Backend
+## Built-In Flow: Flux
 
-Actuators are identified by a `mode/backend` string:
+The reference actuator flow is Flux-oriented:
 
-- **mode** describes _how_ the version reaches the target: `push` (hub writes to the spoke) or `pull` (spoke observes and converges).
-- **backend** identifies the delivery system: `flux`, `argo`, `helm`, etc.
+1. Kapro writes the desired version for the target.
+2. The spoke controller observes that desired version.
+3. The spoke patches local Flux resources, such as `OCIRepository` and `Kustomization`.
+4. Flux reconciles workloads in the target cluster.
+5. The spoke reports the currently running version and convergence state.
+
+This means Kapro does not replace Flux. It gives Flux a fleet-level promotion decision to execute.
+
+## Backend Shape
+
+Actuators are identified by a mode/backend pair:
+
+| Part | Meaning |
+|---|---|
+| `mode` | How the version reaches the target, for example `push` or `pull`. |
+| `backend` | The delivery system, for example `flux`, `argo`, or `helm`. |
 
 The reference implementation is `push/flux`.
 
-## Flux Actuator (push/flux)
-
-The built-in Flux actuator:
-
-1. Writes `MemberCluster.spec.desiredVersion` on the hub cluster.
-2. The spoke's `kapro-cluster-controller` observes the change.
-3. The spoke controller patches the local Flux `OCIRepository` + `Kustomization` to point at the new version.
-4. Flux reconciles the workloads.
-5. The spoke reports convergence back through `MemberCluster.status.currentVersions`.
-
-Kapro then checks `IsConverged` to confirm the target has reached the desired version.
-
 ## Plugin Actuators
 
-External actuators can be implemented as gRPC plugins using the KAI (Kapro Actuator Interface) contract:
+External actuators can be implemented through the Kapro Actuator Interface (KAI). Use plugins when the backend is internal, proprietary, or has a release protocol Kapro should not compile into the core operator.
 
-- Proto definition: `spec/kai/v1alpha1/actuator.proto`
-- Conformance suite: `conformance/actuator/`
+The contract stays small:
 
-Register a plugin by creating a `PluginRegistration` resource with `spec.type: actuator` and the gRPC endpoint.
+- Apply this version.
+- Report whether the target converged.
+- Roll back if policy requires it.
 
-The in-process actuator contract is a Preview surface. See the [API stability](/docs/reference/api-stability) page before depending on it across minor releases.
+That boundary keeps Kapro focused on promotion orchestration instead of becoming another delivery engine.

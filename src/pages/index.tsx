@@ -32,12 +32,12 @@ function HomepageHeader() {
       <div className={clsx('container', styles.heroInner)}>
         <div className={styles.heroCopy}>
           <p className={styles.eyebrow}>Kubernetes fleet promotion control plane</p>
-          <h1 className={styles.heroTitle}>Promote releases across clusters with policy and proof.</h1>
-          <p className={styles.heroSubtitle}>{siteConfig.tagline}. Kapro coordinates delivery waves, gates, approvals, health checks, and backend actuators without replacing Flux, Argo CD, or your rollout stack.</p>
+          <h1 className={styles.heroTitle}>Kubernetes-native fleet promotion.</h1>
+          <p className={styles.heroSubtitle}>{siteConfig.tagline}. Kapro decides which clusters are allowed to receive an artifact version now, and records why.</p>
           <div className={styles.badges}>
             <span className={styles.badge}>Open source</span>
             <span className={styles.badge}>Apache 2.0</span>
-            <span className={styles.badge}>Kubernetes native</span>
+              <span className={styles.badge}>Flux compatible</span>
           </div>
           <div className={styles.buttons}>
             <Link

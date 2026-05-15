@@ -4,73 +4,56 @@ sidebar_position: 2
 
 # Release FSM
 
-Each target in a Release progresses through a finite state machine (FSM). The phase is stored at `ReleaseTarget.status.phase`.
+Each selected cluster becomes a `ReleaseTarget`. Every target moves through the same finite state machine, but optional gates are skipped when no policy is configured.
+
+<div class="kapro-diagram">
+  <div class="kapro-flow">
+    <div class="kapro-node"><strong>Pending</strong><span>Selected but not activated yet.</span></div>
+    <div class="kapro-node"><strong>Verify</strong><span>Check artifact signature and provenance.</span></div>
+    <div class="kapro-node"><strong>Evaluate</strong><span>Health, metrics, soak, and approval gates.</span></div>
+    <div class="kapro-node"><strong>Apply</strong><span>Ask the actuator to converge the backend.</span></div>
+  </div>
+  <div class="kapro-grid kapro-gap-top">
+    <div class="kapro-card kapro-good"><strong>Converged</strong><span>The target is running the desired version.</span></div>
+    <div class="kapro-card kapro-bad"><strong>Failed</strong><span>A gate or apply step failed and policy halted progression.</span></div>
+    <div class="kapro-card"><strong>RolledBack</strong><span>The target returned to a previous version after failure policy requested rollback.</span></div>
+  </div>
+</div>
 
 ## Phase Progression
 
-```
-Pending
-  |
-Verification          -- optional: cosign signature verification
-  |
-HealthCheck           -- optional: MemberCluster health is fresh + Ready
-  |
-MetricsCheck          -- optional: Prometheus queries pass
-  |
-Soaking               -- optional: minimum time-since-entry has elapsed
-  |
-WaitingApproval       -- optional: Approval CR exists and is Approved
-  |
-Applying              -- Actuator.Apply() called; desiredVersion written
-  |
-Converged  |  Failed  |  RolledBack
-```
+| Phase | What happens |
+|---|---|
+| `Pending` | The target is selected, but dependencies, concurrency, or suspension keep it inactive. |
+| `Verification` | Optional OCI signature/provenance checks run. |
+| `HealthCheck` | The target cluster must be reachable and ready. |
+| `MetricsCheck` | Prometheus or custom metrics must pass. |
+| `Soaking` | The target waits for a minimum observation window. |
+| `WaitingApproval` | A human approval CR must exist and be approved. |
+| `Applying` | The actuator writes the desired version and waits for convergence. |
+| `Converged` | The target reports the desired version. |
+| `Failed` | The target stops because policy did not allow continuation. |
+| `RolledBack` | The target was returned to a previous version. |
 
-Each optional gate is skipped when its policy is not configured. Phase handlers never silently fall back -- an unresolvable gate returns an error and the target stays in its current phase with a failure condition.
+## Why This Matters
 
-## Phases Explained
+Kapro keeps target progress explicit. A stuck release should answer:
 
-### Pending
+- Which cluster is blocked?
+- Which phase is it in?
+- Which gate produced the evidence?
+- Did a human approve or reject it?
+- Did the backend converge?
 
-The target has been selected by a stage but the planner has not yet activated it. This can be due to stage dependencies, `maxParallel` limits, or a suspended Release.
-
-### Verification
-
-Optional OCI signature verification using cosign. The gate checks that the artifact digest has a valid signature matching the configured identity or key. Targets skip this phase when no verification policy is configured.
-
-### HealthCheck
-
-Checks that the target MemberCluster's health is fresh and Ready. This ensures the target cluster is reachable and healthy before attempting delivery.
-
-### MetricsCheck
-
-Evaluates Prometheus queries configured in the stage gate policy. All queries must return passing values for the target to advance. Supports configurable intervals and failure thresholds.
-
-### Soaking
-
-A time-based gate. The target must remain in this phase for at least the configured `soakTime` duration before advancing. This gives operators time to observe the deployment before it is considered healthy.
-
-### WaitingApproval
-
-A human must approve the target. The operator sends a notification with signed approve/reject URLs. A human clicks approve, creating an `Approval` CR with the deterministic name `<release>-<target>`. The gate checks for this CR directly.
-
-### Applying
-
-The actuator applies the desired version to the target cluster. For the Flux actuator, this writes `MemberCluster.spec.desiredVersion` on the hub. The spoke cluster controller then reconciles the local delivery system.
-
-### Terminal States
-
-- **Converged**: The target cluster is running the desired version and the actuator has confirmed convergence.
-- **Failed**: A gate failed and the failure policy does not allow retry or continuation.
-- **RolledBack**: The target was rolled back to its previous version after a failure.
+That is the difference between “a CI job failed somewhere” and an auditable fleet promotion record.
 
 ## Status Shape
 
-| Field | Bound |
-|-------|-------|
-| `status.targets[]` | One row per selected cluster. Current state only. |
-| `status.targets[i].gates[]` | One row per gate invocation. |
-| `status.report` | Compact counter summary + pending approval list. |
-| `status.auditTrail` | Immutable provenance, capped at 50 entries. |
-| `status.pipelineProgress[]` | One row per pipeline node in the DAG. |
+| Field | Meaning |
+|-------|---------|
+| `status.targets[]` | One row per selected cluster. |
+| `status.targets[i].gates[]` | Gate evidence for that target. |
+| `status.report` | Compact release summary and pending approvals. |
+| `status.auditTrail` | Immutable provenance entries, capped for size. |
+| `status.pipelineProgress[]` | Pipeline DAG progress. |
 | `status.conditions` | Standard Kubernetes conditions. |
