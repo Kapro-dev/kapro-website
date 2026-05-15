@@ -4,7 +4,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
   title: 'Kapro',
-  tagline: 'Promotion control plane for Kubernetes fleets',
+  tagline: 'Progressive delivery and promotion engine for multi-cluster Kubernetes fleets',
   favicon: 'img/favicon.ico',
 
   future: {
@@ -76,7 +76,7 @@ const config: Config = {
       ],
     },
     footer: {
-      style: 'dark',
+      style: 'light',
       links: [
         {
           title: 'Docs',
