@@ -121,11 +121,12 @@ Production can also add metrics:
 ```yaml
 gate:
   mode: auto
-  metrics:
-    - name: error-rate
-      query: rate(http_requests_total{status=~"5.."}[5m])
-      threshold: "0.01"
-      interval: 60s
+  gate:
+    metrics:
+      - provider: prometheus
+        query: rate(http_requests_total{status=~"5.."}[5m])
+        threshold: 0.01
+        interval: 60s
 ```
 
 Use the exact metric fields supported by your Kapro release. The important
@@ -139,11 +140,12 @@ kind: Release
 metadata:
   name: checkout-v1-8-2
 spec:
-  appRef:
-    name: checkout
-  version: "v1.8.2"
-  pipelineRef:
-    name: checkout-three-wave
+  version: "oci://registry.example.com/bundles/checkout@sha256:a1b2..."
+  pipelines:
+    - name: main
+      pipeline: checkout-three-wave
+  suspended: false
+  timeout: 4h
 ```
 
 ## Step 6: Watch It Move

@@ -11,7 +11,7 @@ You do not need to understand every CRD on day one. Start with these:
 <div class="kapro-diagram">
   <div class="kapro-flow">
     <div class="kapro-node"><strong>MemberCluster</strong><span>Where a version can go.</span></div>
-    <div class="kapro-node"><strong>KaproApp</strong><span>What application is being promoted.</span></div>
+    <div class="kapro-node"><strong>KaproBundle</strong><span>What components are being promoted.</span></div>
     <div class="kapro-node"><strong>Pipeline</strong><span>How promotion should move.</span></div>
     <div class="kapro-node"><strong>Release</strong><span>Which version to promote now.</span></div>
   </div>
@@ -60,25 +60,25 @@ metadata:
     kapro.io/region: europe-west3
 spec:
   actuator:
-    mode: push
+    mode: pull
     backend: flux
-    push:
+    pull:
+      ociRepository: app-bundle
       namespace: flux-system
-      resourceSet: checkout
-      inputField: tag
 ```
 
 The labels are important. Pipelines use them to select targets.
 
-## KaproApp
+## KaproBundle
 
-A `KaproApp` describes the application and components that Kapro can promote.
+A `KaproBundle` describes the components, chart registries, defaults, and
+per-cluster overrides that Kapro can promote.
 
 Example:
 
 ```yaml
 apiVersion: kapro.io/v1alpha1
-kind: KaproApp
+kind: KaproBundle
 metadata:
   name: checkout
 spec:
@@ -92,9 +92,19 @@ spec:
       version: "5.28.0"
       repo: gar
       targetNamespace: workloads
+    - name: keycloak
+      version: "26.2.5"
+      repo: gar
+      targetNamespace: workloads
+      shared: true
+      prune: false
+  defaults:
+    timeout: 10m
+    retries: 3
 ```
 
-Think of `KaproApp` as application metadata. It is not the running release.
+Think of `KaproBundle` as the component template. It is not the running
+release, and it has no status by itself.
 
 ## Pipeline
 
@@ -155,11 +165,12 @@ kind: Release
 metadata:
   name: checkout-v1-8-2
 spec:
-  appRef:
-    name: checkout
-  version: "v1.8.2"
-  pipelineRef:
-    name: checkout-progressive
+  version: "oci://europe-west3-docker.pkg.dev/my-project/bundles/checkout@sha256:a1b2..."
+  pipelines:
+    - name: main
+      pipeline: checkout-progressive
+  suspended: false
+  timeout: 4h
 ```
 
 After a `Release` exists, Kapro creates target state and drives the lifecycle.
@@ -199,7 +210,7 @@ exists and is approved.
     <div class="kapro-lane">
       <div><strong>Config</strong><span>before release</span></div>
       <div class="kapro-lane-line"></div>
-      <div class="kapro-clusters"><span class="kapro-cluster active">MemberCluster</span><span class="kapro-cluster active">KaproApp</span><span class="kapro-cluster active">Pipeline</span></div>
+      <div class="kapro-clusters"><span class="kapro-cluster active">MemberCluster</span><span class="kapro-cluster active">KaproBundle</span><span class="kapro-cluster active">Pipeline</span></div>
       <div class="kapro-status">ready</div>
     </div>
     <div class="kapro-lane">

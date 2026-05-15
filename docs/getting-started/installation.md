@@ -7,7 +7,7 @@ sidebar_position: 1
 Kapro runs as an operator in a hub cluster.
 
 Install it first, then add fleet configuration such as `MemberCluster`,
-`KaproApp`, `Pipeline`, and `Release` objects.
+`KaproBundle`, `Pipeline`, and `Release` objects.
 
 ## Before You Start
 
@@ -78,7 +78,7 @@ After the operator is running, create the objects that define your fleet:
 <div class="kapro-diagram">
   <div class="kapro-flow">
     <div class="kapro-node"><strong>MemberCluster</strong><span>Register target clusters.</span></div>
-    <div class="kapro-node"><strong>KaproApp</strong><span>Define the application.</span></div>
+    <div class="kapro-node"><strong>KaproBundle</strong><span>Define components and chart sources.</span></div>
     <div class="kapro-node"><strong>Pipeline</strong><span>Define the rollout waves.</span></div>
     <div class="kapro-node"><strong>Release</strong><span>Promote a version.</span></div>
   </div>

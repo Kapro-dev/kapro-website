@@ -34,32 +34,30 @@ metadata:
     kapro.io/region: europe-west3
 spec:
   actuator:
-    mode: push
+    mode: pull
     backend: flux
-    push:
+    pull:
+      ociRepository: app-bundle
       namespace: flux-system
-      resourceSet: checkout
-      inputField: tag
-      tenantField: tenant
 ```
 
 Read it as:
 
 - this cluster is a canary target
 - Kapro should use the Flux backend
-- the version is written to a Flux Operator `ResourceSet` input named `tag`
+- the spoke cluster should pull the selected OCI bundle through `app-bundle`
 
-## 2. Define the Application
+## 2. Define the Component Bundle
 
 ```yaml
 apiVersion: kapro.io/v1alpha1
-kind: KaproApp
+kind: KaproBundle
 metadata:
   name: checkout
 spec:
   registries:
     - name: platform
-      url: oci://registry.example.com/platform
+      url: oci://registry.example.com/platform/charts
       provider: generic
       interval: 5m
   components:
@@ -69,7 +67,8 @@ spec:
       targetNamespace: checkout
 ```
 
-`KaproApp` is metadata. The running rollout starts when you create a `Release`.
+`KaproBundle` is the reusable component template. The running rollout starts
+when you create a `Release`.
 
 ## 3. Define a Progressive Pipeline
 
@@ -130,11 +129,12 @@ kind: Release
 metadata:
   name: checkout-v1-8-2
 spec:
-  appRef:
-    name: checkout
-  version: "v1.8.2"
-  pipelineRef:
-    name: checkout-flux-progressive
+  version: "oci://registry.example.com/bundles/checkout@sha256:a1b2..."
+  pipelines:
+    - name: main
+      pipeline: checkout-flux-progressive
+  suspended: false
+  timeout: 4h
 ```
 
 ## 5. Watch the Result
@@ -161,6 +161,7 @@ After approval, production targets move through `Applying` and `Converged`.
 Flux still owns:
 
 - fetching sources
+- pulling OCI artifacts
 - applying manifests
 - reconciling workloads
 - reporting local readiness

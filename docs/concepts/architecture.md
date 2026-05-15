@@ -46,7 +46,7 @@ The hub is the control plane.
 It stores:
 
 - `MemberCluster` inventory
-- `KaproApp` definitions
+- `KaproBundle` definitions
 - `Pipeline` rollout plans
 - `Release` objects
 - `ReleaseTarget` status

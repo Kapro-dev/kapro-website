@@ -18,7 +18,7 @@ Kapro uses explicit API maturity levels for CRDs, Go extension packages, lifecyc
 
 | Surface | Level |
 |---|---|
-| Core promotion CRDs (KaproApp, Pipeline, Release, ReleaseTarget, MemberCluster, Approval, AgentPolicy) | Alpha |
+| Core promotion CRDs (KaproBundle, Pipeline, Release, ReleaseTarget, MemberCluster, Approval, AgentPolicy) | Alpha |
 | ReleaseTrigger CRD | Preview |
 | PluginRegistration CRD | Preview |
 | Notification provider/policy CRDs | Preview |

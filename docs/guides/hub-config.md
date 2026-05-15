@@ -16,7 +16,7 @@ runtime artifact versions.
   <div class="kapro-split">
     <div class="kapro-card">
       <strong>Hub config Git repo</strong>
-      <span>Fleet inventory, applications, pipelines, and releases.</span>
+      <span>Fleet inventory, bundles, pipelines, and releases.</span>
     </div>
     <div class="kapro-card">
       <strong>OCI registry</strong>
@@ -38,7 +38,7 @@ hub-config/
     canary-eu.yaml
     prod-eu.yaml
     prod-us.yaml
-  apps/
+  bundles/
     checkout.yaml
   pipelines/
     checkout-progressive.yaml
@@ -52,7 +52,7 @@ hub-config/
 | Directory | What lives there |
 |---|---|
 | `clusters/` | `MemberCluster` objects. One file per cluster is easiest to review. |
-| `apps/` | `KaproApp` objects. Application metadata and component definitions. |
+| `bundles/` | `KaproBundle` objects. Component registries, versions, defaults, and overrides. |
 | `pipelines/` | `Pipeline` objects. Stage order, selectors, gates, and concurrency. |
 | `releases/` | `Release` objects. The intent to promote a version. |
 
@@ -63,7 +63,7 @@ Apply objects in dependency order:
 <div class="kapro-diagram">
   <div class="kapro-flow">
     <div class="kapro-node"><strong>1. Clusters</strong><span>Register targets and labels.</span></div>
-    <div class="kapro-node"><strong>2. Apps</strong><span>Define the application and components.</span></div>
+    <div class="kapro-node"><strong>2. Bundles</strong><span>Define components and chart sources.</span></div>
     <div class="kapro-node"><strong>3. Pipelines</strong><span>Define the rollout plan.</span></div>
     <div class="kapro-node"><strong>4. Releases</strong><span>Start promotion only after the inputs exist.</span></div>
   </div>
@@ -112,7 +112,7 @@ On pull requests, validate with server-side dry run:
 
 ```bash
 kubectl apply --dry-run=server -f clusters/
-kubectl apply --dry-run=server -f apps/
+kubectl apply --dry-run=server -f bundles/
 kubectl apply --dry-run=server -f pipelines/
 kubectl apply --dry-run=server -f releases/
 ```
@@ -121,7 +121,7 @@ After merge, apply in the same order:
 
 ```bash
 kubectl apply -f clusters/
-kubectl apply -f apps/
+kubectl apply -f bundles/
 kubectl apply -f pipelines/
 kubectl apply -f releases/
 ```
@@ -130,7 +130,7 @@ Then inspect:
 
 ```bash
 kubectl get memberclusters.kapro.io
-kubectl get kaproapps.kapro.io,pipelines.kapro.io,releases.kapro.io
+kubectl get kaprobundles.kapro.io,pipelines.kapro.io,releases.kapro.io
 kubectl describe release checkout-v1-8-2
 ```
 

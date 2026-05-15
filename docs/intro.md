@@ -94,8 +94,8 @@ You can understand Kapro with five objects:
       <span>One cluster in the fleet. Labels describe region, tier, cloud, compliance zone, or capacity.</span>
     </div>
     <div class="kapro-card">
-      <strong>KaproApp</strong>
-      <span>The application metadata and components that are allowed to be promoted.</span>
+      <strong>KaproBundle</strong>
+      <span>The component bundle, chart sources, defaults, and overrides that can be promoted.</span>
     </div>
     <div class="kapro-card">
       <strong>Pipeline</strong>
