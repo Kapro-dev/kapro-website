@@ -108,48 +108,17 @@
 }
 
 .flowCanvas {
-  height: 360px;
+  display: grid;
+  gap: 1rem;
   margin-top: 0.85rem;
   position: relative;
 }
 
-.signalSvg {
-  inset: 0;
-  pointer-events: none;
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-}
-
-.signalPath {
-  fill: none;
-  stroke: rgba(37, 99, 235, 0.26);
-  stroke-dasharray: 8 8;
-  stroke-width: 2;
-  animation: dashFlow 7s linear infinite;
-}
-
-.signalPacket,
-.signalPacketTwo {
-  fill: #2563eb;
-  filter: drop-shadow(0 0 8px rgba(37, 99, 235, 0.38));
-  offset-path: path("M56 70 C120 70 126 130 190 130 S280 130 330 86");
-  animation: packetFlow 5.4s ease-in-out infinite;
-}
-
-.signalPacketTwo {
-  fill: #0f8a6a;
-  offset-path: path("M210 212 C260 212 284 220 340 220");
-  animation-delay: 1.2s;
-}
-
-.artifactCard,
-.gatesCard,
-.hubNode,
-.waveStack {
-  position: absolute;
-  z-index: 1;
+.pipelineRow {
+  align-items: stretch;
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: minmax(86px, 0.9fr) 24px minmax(132px, 1.25fr) 24px minmax(86px, 0.95fr);
 }
 
 .artifactCard,
@@ -162,9 +131,7 @@
 }
 
 .artifactCard {
-  left: 0;
-  top: 18px;
-  width: 140px;
+  min-width: 0;
 }
 
 .artifactCard strong,
@@ -178,9 +145,10 @@
   border-radius: 5px;
   color: #17324d;
   display: inline-block;
-  font-size: 0.73rem;
+  font-size: 0.7rem;
   margin-top: 0.45rem;
   padding: 0.12rem 0.35rem;
+  word-break: keep-all;
 }
 
 .cardLabel {
@@ -194,9 +162,7 @@
 }
 
 .gatesCard {
-  left: 108px;
-  top: 108px;
-  width: 164px;
+  min-width: 0;
 }
 
 .gateList {
@@ -241,10 +207,9 @@
   font-weight: 800;
   gap: 0.35rem;
   justify-content: center;
-  left: 286px;
-  min-height: 84px;
-  top: 42px;
-  width: 104px;
+  min-height: 100%;
+  min-width: 0;
+  text-align: center;
 }
 
 .hubNode .kubeMark {
@@ -267,23 +232,22 @@
 }
 
 .waveStack {
-  bottom: 0;
   display: grid;
-  gap: 0.55rem;
-  right: 0;
-  width: min(100%, 330px);
+  gap: 0.7rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .wave {
-  align-items: center;
+  align-content: start;
   background: #ffffff;
   border: 1px solid #dbe4ef;
   border-radius: 8px;
   display: grid;
   gap: 0.7rem;
-  grid-template-columns: 70px 1fr 62px;
+  grid-template-columns: 1fr;
   padding: 0.7rem;
   box-shadow: 0 10px 26px rgba(23, 32, 51, 0.05);
+  min-width: 0;
 }
 
 .waveLabel {
@@ -305,7 +269,7 @@
 .clusterGrid {
   display: grid;
   gap: 0.36rem;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .clusterNode {
@@ -330,7 +294,7 @@
   color: #0f8a6a;
   font-size: 0.7rem;
   font-weight: 800;
-  text-align: right;
+  text-align: left;
   text-transform: uppercase;
 }
 
@@ -338,24 +302,77 @@
   color: #728197;
 }
 
-@keyframes dashFlow {
-  to {
-    stroke-dashoffset: -160;
-  }
+.flowRail {
+  align-items: center;
+  display: flex;
+  min-width: 0;
+  position: relative;
 }
 
-@keyframes packetFlow {
-  0% {
-    offset-distance: 0%;
-    opacity: 0;
-  }
-  12%, 82% {
-    opacity: 1;
-  }
-  100% {
-    offset-distance: 100%;
-    opacity: 0;
-  }
+.flowRail::before {
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(37, 99, 235, 0.34) 0,
+    rgba(37, 99, 235, 0.34) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+  content: "";
+  height: 2px;
+  width: 100%;
+}
+
+.flowRail::after {
+  border-bottom: 5px solid transparent;
+  border-left: 7px solid rgba(37, 99, 235, 0.5);
+  border-top: 5px solid transparent;
+  content: "";
+  position: absolute;
+  right: 0;
+}
+
+.flowPacket {
+  animation: railPacket 2.8s ease-in-out infinite;
+  background: #2563eb;
+  border-radius: 999px;
+  box-shadow: 0 0 10px rgba(37, 99, 235, 0.44);
+  height: 7px;
+  left: 0;
+  position: absolute;
+  width: 7px;
+}
+
+.fanoutRail {
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  height: 22px;
+  margin: -0.1rem 0 -0.25rem;
+}
+
+.fanoutRail span {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+
+.fanoutRail span::before {
+  background: rgba(15, 138, 106, 0.38);
+  content: "";
+  height: 100%;
+  width: 2px;
+}
+
+.fanoutRail span::after {
+  background: #0f8a6a;
+  border-radius: 999px;
+  content: "";
+  height: 7px;
+  position: absolute;
+  top: 2px;
+  width: 7px;
+  animation: fanoutPulse 2.6s ease-in-out infinite;
 }
 
 @keyframes gatePass {
@@ -366,6 +383,31 @@
   45%, 62% {
     opacity: 1;
     transform: translateX(3px);
+  }
+}
+
+@keyframes railPacket {
+  0% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+  18%, 84% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+}
+
+@keyframes fanoutPulse {
+  0%, 100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(10px);
   }
 }
 
@@ -380,9 +422,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .signalPath,
-  .signalPacket,
-  .signalPacketTwo,
+  .flowPacket,
+  .fanoutRail span::after,
   .gate,
   .clusterNodeActive {
     animation: none;
@@ -420,43 +461,36 @@
 }
 
 @media screen and (max-width: 520px) {
-  .flowCanvas {
-    height: auto;
+  .pipelineRow {
+    grid-template-columns: 1fr;
   }
 
-  .signalSvg {
+  .flowRail {
+    height: 20px;
+    justify-content: center;
+  }
+
+  .flowRail::before {
+    height: 100%;
+    width: 2px;
+  }
+
+  .flowRail::after {
+    bottom: 0;
+    left: calc(50% - 5px);
+    right: auto;
+    transform: rotate(90deg);
+  }
+
+  .flowPacket {
+    left: calc(50% - 3px);
+  }
+
+  .fanoutRail {
     display: none;
   }
 
-  .artifactCard,
-  .gatesCard,
-  .hubNode,
   .waveStack {
-    position: static;
-  }
-
-  .flowCanvas {
-    display: grid;
-    gap: 0.75rem;
-  }
-
-  .artifactCard,
-  .gatesCard,
-  .hubNode,
-  .waveStack {
-    width: 100%;
-  }
-
-  .hubNode {
-    min-height: 72px;
-  }
-
-  .wave {
-    grid-template-columns: 70px 1fr;
-  }
-
-  .waveStatus {
-    grid-column: 1 / -1;
-    text-align: left;
+    grid-template-columns: 1fr;
   }
 }

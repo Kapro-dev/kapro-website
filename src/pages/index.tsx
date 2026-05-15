@@ -63,36 +63,43 @@ function HomepageHeader() {
           </div>
 
           <div className={styles.flowCanvas}>
-            <svg className={styles.signalSvg} viewBox="0 0 440 360" preserveAspectRatio="none" aria-hidden="true">
-              <path className={styles.signalPath} d="M56 70 C120 70 126 130 190 130 S280 130 330 86" />
-              <path className={styles.signalPath} d="M210 170 C260 170 284 152 340 152" />
-              <path className={styles.signalPath} d="M210 212 C260 212 284 220 340 220" />
-              <path className={styles.signalPath} d="M210 254 C260 254 284 286 340 286" />
-              <circle className={styles.signalPacket} cx="0" cy="0" r="5" />
-              <circle className={styles.signalPacketTwo} cx="0" cy="0" r="5" />
-            </svg>
+            <div className={styles.pipelineRow}>
+              <div className={styles.artifactCard}>
+                <span className={styles.cardLabel}>Artifact</span>
+                <strong>OCI image</strong>
+                <code>sha256:9f4a</code>
+              </div>
 
-            <div className={styles.artifactCard}>
-              <span className={styles.cardLabel}>Artifact</span>
-              <strong>OCI image</strong>
-              <code>sha256:9f4a</code>
-            </div>
+              <span className={styles.flowRail} aria-hidden="true">
+                <span className={styles.flowPacket} />
+              </span>
 
-            <div className={styles.gatesCard}>
-              <span className={styles.cardLabel}>Gate policy</span>
-              <div className={styles.gateList}>
-                {gates.map((gate, index) => (
-                  <span className={styles.gate} key={gate} style={{animationDelay: `${index * 0.45}s`}}>
-                    <span className={styles.check}>✓</span>
-                    {gate}
-                  </span>
-                ))}
+              <div className={styles.gatesCard}>
+                <span className={styles.cardLabel}>Gate policy</span>
+                <div className={styles.gateList}>
+                  {gates.map((gate, index) => (
+                    <span className={styles.gate} key={gate} style={{animationDelay: `${index * 0.45}s`}}>
+                      <span className={styles.check}>✓</span>
+                      {gate}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <span className={styles.flowRail} aria-hidden="true">
+                <span className={styles.flowPacket} />
+              </span>
+
+              <div className={styles.hubNode}>
+                <KubernetesMark />
+                <span>Kapro Hub</span>
               </div>
             </div>
 
-            <div className={styles.hubNode}>
-              <KubernetesMark />
-              <span>Kapro Hub</span>
+            <div className={styles.fanoutRail} aria-hidden="true">
+              <span />
+              <span />
+              <span />
             </div>
 
             <div className={styles.waveStack}>
