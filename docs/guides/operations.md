@@ -4,69 +4,98 @@ sidebar_position: 2
 
 # Operations
 
-This guide documents the operational posture for running Kapro as a fleet promotion controller.
+Kapro is operated like a Kubernetes controller: watch objects, status,
+conditions, events, logs, and metrics.
+
+The most useful operational question is:
+
+```text
+Which release target is blocked, and what evidence explains it?
+```
+
+## First Commands
+
+Start here when a release is not moving:
+
+```bash
+kubectl get releases,releasetargets,memberclusters
+kubectl describe release <release>
+kubectl get releasetargets -l kapro.io/release=<release> -o wide
+kubectl -n kapro-system logs deploy/kapro-operator --since=30m
+```
+
+## Read the Phase
+
+| Target phase | What to check |
+|---|---|
+| `Pending` | Stage dependency, concurrency limit, suspended release, planner deferral. |
+| `Verification` | Artifact digest, signature policy, verification evidence. |
+| `HealthCheck` | MemberCluster heartbeat and workload health. |
+| `MetricsCheck` | Prometheus query, threshold, missing samples, unreachable metrics backend. |
+| `Soaking` | Soak duration. This can be normal. |
+| `WaitingApproval` | Approval object exists, approver is correct, approval was not rejected. |
+| `Applying` | Actuator logs and backend convergence, such as Flux readiness. |
+| `Failed` | Gate evidence, failure policy, timeout, backend error. |
 
 ## Metrics
 
-The operator exposes Prometheus metrics on :8080. Key metrics:
+The operator exposes Prometheus metrics on `:8080`.
 
-| Metric | Type | Use |
-|---|---|---|
-| kapro_controller_reconciles_total | counter | Reconcile volume and error rate |
-| kapro_controller_reconcile_duration_seconds | histogram | Reconcile latency |
-| kapro_sync_transitions_total | counter | Target FSM phase transitions |
-| kapro_gate_evaluations_total | counter | Gate pass, fail, inconclusive rate |
-| kapro_stage_duration_seconds | histogram | Stage duration by pipeline |
-| kapro_release_active_total | gauge | Non-terminal Releases |
-| kapro_plugin_probe_ready | gauge | Plugin readiness |
+| Metric | What it tells you |
+|---|---|
+| `kapro_controller_reconciles_total` | Reconcile volume and errors. |
+| `kapro_controller_reconcile_duration_seconds` | Reconcile latency. |
+| `kapro_sync_transitions_total` | Target phase transitions. |
+| `kapro_gate_evaluations_total` | Gate pass, fail, running, and inconclusive rates. |
+| `kapro_stage_duration_seconds` | Stage duration by pipeline. |
+| `kapro_release_active_total` | Number of non-terminal releases. |
+| `kapro_plugin_probe_ready` | Plugin readiness. |
 
 ## Alerts
 
+Good first alerts:
+
 | Alert | Signal |
 |---|---|
-| KaproReleaseStuck | Active Releases remain non-terminal for a sustained window |
-| KaproGateFailureRateHigh | Gate failures exceed 10% of evaluations |
-| KaproPluginProbeFailures | Plugin probe failures or readiness drops |
-| KaproReleaseTriggerBlocked | ReleaseTrigger reconciles are failing |
-| KaproControllerReconcileErrors | Sustained reconcile errors |
+| Release stuck | A release remains non-terminal longer than expected. |
+| Gate failure rate high | Gate failures exceed a threshold. |
+| Plugin not ready | Plugin probe readiness drops. |
+| ReleaseTrigger blocked | Trigger reconciliation is failing. |
+| Reconcile errors | Controller errors stay elevated. |
 
-## Workqueue Tuning
+## Scaling Knobs
 
-- Start with 5 concurrent reconciles for hub clusters below 500 targets.
+Start simple:
+
+- Keep leader election enabled.
+- Start with 5 concurrent reconciles for smaller hubs.
 - Keep plugin timeouts short.
-- Prefer gate interval values of at least 30s.
+- Use gate intervals of at least 30 seconds unless you have a reason to poll faster.
+- Increase stage `maxParallel` only after metrics and backend capacity look healthy.
 
 ## Sharding
 
-Set KAPRO_SHARD on an operator replica to enable shard selection:
+Use sharding when one hub operator should not process every release.
 
-- Run one shard per major environment or region.
-- Assign objects using kapro.io/shard label.
+Set `KAPRO_SHARD` on an operator replica and label objects with
+`kapro.io/shard`.
 
-## Runbook: Stuck Release
+Common shard boundaries:
 
-```bash
-kubectl get releases,releasetargets,releasetriggers,pluginregistrations
-kubectl describe release <release>
-kubectl get releasetargets -l kapro.io/release=<release> -o wide
-kubectl logs -n kapro-system deploy/kapro-operator --since=30m
-```
+- environment: `dev`, `stage`, `prod`
+- geography: `eu`, `us`, `apac`
+- tenant or business unit
 
-| Phase | Likely blocker |
-|---|---|
-| Pending | Stage dependency, planner deferral, suspended Release |
-| Verification | Artifact verification failure |
-| HealthCheck | MemberCluster health not ready |
-| Soaking | Normal soak delay |
-| MetricsCheck | Prometheus query false or unreachable |
-| WaitingApproval | Approval not created or rejected |
-| Applying | Actuator backend not converging |
+## Rollback
 
-## Runbook: Rollback
+Do not edit status to roll back.
 
-Rollback is a delivery action, not a status edit.
+Create a new release pinned to the last known good version:
 
-1. Identify the last known good digest from ReleaseTarget.status.previousVersion.
-2. Create a new Release pinned to that digest.
-3. Use conservative maxParallel and approval gates.
-4. Keep the failed Release for audit.
+1. Find the previous version from target status or your release record.
+2. Create a new `Release` for that version.
+3. Use conservative `maxParallel`.
+4. Keep approval gates for production.
+5. Keep the failed release for audit.
+
+Rollback is another controlled promotion, not a manual status mutation.

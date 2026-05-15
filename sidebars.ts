@@ -16,10 +16,22 @@ const sidebars: SidebarsConfig = {
       label: 'Concepts',
       items: [
         'concepts/architecture',
+        'concepts/core-objects',
+        'concepts/pipelines-and-waves',
         'concepts/release-fsm',
         'concepts/actuators',
         'concepts/gates',
         'concepts/notifications',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Examples',
+      items: [
+        'examples/flux',
+        'examples/argo',
+        'examples/progressive-rollout',
+        'examples/approval-gates',
       ],
     },
     {

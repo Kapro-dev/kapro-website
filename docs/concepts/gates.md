@@ -4,65 +4,129 @@ sidebar_position: 4
 
 # Gates
 
-A gate is a policy check that answers one question:
+A gate is a safety check for one target.
 
-> May this target advance to the next phase?
+It answers:
 
-Gates do not run the release. They evaluate evidence. The `ReleaseReconciler` owns timing, retries, failure policy, and phase transitions.
+```text
+May this cluster continue now?
+```
+
+Gates do not run the rollout. The `ReleaseReconciler` runs the lifecycle.
+Gates only return a decision with evidence.
+
+## The Gate Model
 
 <div class="kapro-diagram">
   <div class="kapro-flow">
-    <div class="kapro-node"><strong>Target selected</strong><span>A stage binds a cluster into the release.</span></div>
-    <div class="kapro-node"><strong>Gate evaluates</strong><span>Signature, health, metrics, soak, approval, or custom policy.</span></div>
-    <div class="kapro-node"><strong>Evidence recorded</strong><span>Result is stored in `ReleaseTarget.status.gates[]`.</span></div>
-    <div class="kapro-node"><strong>Advance or stop</strong><span>Policy decides pass, retry, fail, continue, or rollback.</span></div>
+    <div class="kapro-node">
+      <strong>Evidence</strong>
+      <span>Metric value, signature result, approval state, soak timer, webhook answer.</span>
+    </div>
+    <div class="kapro-node">
+      <strong>Analysis</strong>
+      <span>Kapro compares evidence with the configured rule.</span>
+    </div>
+    <div class="kapro-node">
+      <strong>Phase</strong>
+      <span>The gate returns passed, failed, running, or inconclusive.</span>
+    </div>
+    <div class="kapro-node">
+      <strong>Policy</strong>
+      <span>The release either advances, waits, retries, fails, continues, or rolls back.</span>
+    </div>
   </div>
 </div>
 
-## Built-In Gates
+The phase controls rollout. Evidence explains the decision.
 
-| Gate | When it runs | What it protects |
-|------|--------------|------------------|
-| `verification` | Signature policy is configured. | Prevents unsigned or untrusted artifacts from promotion. |
-| `health` | Target health is required. | Avoids sending changes to unhealthy or stale clusters. |
-| `metrics` | Prometheus queries are configured. | Blocks promotion when error rates, latency, or SLO burn are unsafe. |
-| `soak` | `soakTime` is set. | Requires observation time before a wave is considered safe. |
-| `approval` | Approval is required. | Adds an explicit human decision before sensitive targets advance. |
+## Built-In Gate Types
 
-## Gate Composition
+| Gate | Use it when | Example |
+|---|---|---|
+| Verification | You only want trusted artifacts to move. | Cosign signature or provenance check. |
+| Health | You do not want to deploy into a broken cluster. | MemberCluster heartbeat is fresh and workloads are ready. |
+| Metrics | You want telemetry to block bad versions. | Error rate below threshold, SLO burn rate safe. |
+| Soak | You want time between waves. | Wait 30 minutes after canary before production. |
+| Approval | You need a human decision. | SRE approves production or regulated regions. |
+| CEL / Job / Webhook | You need custom policy. | Ask an internal risk service or run a Kubernetes Job. |
+
+## Gate Outcomes
+
+| Result | Meaning |
+|---|---|
+| `Passed` | The target may move to the next phase. |
+| `Running` | The gate is still waiting or collecting evidence. |
+| `Inconclusive` | The gate cannot decide safely yet. Missing data should not become success. |
+| `Failed` | The target must stop or follow failure policy. |
+
+Kapro is conservative by default. If evidence is missing, stale, or unsafe to
+interpret, the gate should not silently pass.
+
+## Example: Canary to Production
 
 <div class="kapro-diagram">
-  <div class="kapro-grid">
-    <div class="kapro-card"><strong>Automated evidence</strong><span>Metrics, health, signature checks, CEL expressions, Jobs, and webhooks.</span></div>
-    <div class="kapro-card"><strong>Human judgment</strong><span>Approvals for regulated regions, production stages, or risky releases.</span></div>
-    <div class="kapro-card"><strong>Failure policy</strong><span>Fail, continue with evidence, retry, or rollback depending on stage policy.</span></div>
+  <div class="kapro-lanes">
+    <div class="kapro-lane">
+      <div><strong>canary</strong><span>automated</span></div>
+      <div class="kapro-lane-line"></div>
+      <div class="kapro-clusters"><span class="kapro-cluster active">signature</span><span class="kapro-cluster active">health</span><span class="kapro-cluster active">metrics</span></div>
+      <div class="kapro-status">passed</div>
+    </div>
+    <div class="kapro-lane">
+      <div><strong>production</strong><span>manual</span></div>
+      <div class="kapro-lane-line"></div>
+      <div class="kapro-clusters"><span class="kapro-cluster active">soak 30m</span><span class="kapro-cluster">approval</span></div>
+      <div class="kapro-status waiting">waiting</div>
+    </div>
   </div>
 </div>
 
-## Example Policy
+The canary stage can be fully automated. Production can require a soak window
+and a human approval before Kapro asks the backend to apply the version.
+
+## Example Gate Policy
 
 ```yaml
 stages:
-  - name: production
-    clusterSelector:
+  - name: production-eu
+    selector:
       matchLabels:
         kapro.io/tier: production
+        kapro.io/region: europe-west3
+    dependsOn:
+      - stage: canary
+        requiredSoakTime: 30m
     gate:
-      soakTime: 30m
-      metrics:
-        - query: "rate(http_errors_total{cluster='{{.target}}'}[5m]) < 0.01"
-          interval: 60s
-      verification:
-        cosign:
-          keyRef: cosign-pub
-    approval:
-      required: true
-      approvers:
-        - sre-team
+      mode: manual
+      approval:
+        required: true
+        approvers:
+          - sre-team
 ```
 
-The important point is that gate evidence is persisted. A controller restart does not lose the fact that a target is waiting for approval, soaking, or blocked by a metric.
+In plain language:
 
-## Plugin Gates
+1. Select production clusters in `europe-west3`.
+2. Wait for the `canary` stage.
+3. Require 30 minutes of soak.
+4. Require an approval from `sre-team`.
 
-External gates can be implemented through the Kapro Gate Interface (KGI). Use this when the safety decision depends on a system Kapro should not embed directly, such as a risk engine, change-management system, or internal SLO service.
+## Evidence Is Part of the API
+
+Gate evidence is stored in target status. It can include:
+
+- provider name
+- query
+- window
+- observed value
+- threshold
+- sample count
+- reason
+- confidence
+- baseline value
+
+Evidence must not include tokens, headers, secrets, or raw webhook payloads.
+
+That evidence is useful for humans, dashboards, notifications, and future agent
+workflows. It explains why Kapro moved or stopped.

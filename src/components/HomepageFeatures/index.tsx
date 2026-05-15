@@ -10,32 +10,29 @@ type FeatureItem = {
 
 const FeatureList: FeatureItem[] = [
   {
-    title: 'Wave-based Promotion',
+    title: 'Start with a version',
     description: (
       <>
-        Roll out across clusters in ordered waves. Canary first, then regional
-        production, then global. Each wave gates on the previous before
-        proceeding.
+        CI publishes an immutable image or OCI bundle. Kapro treats that version
+        as the contract and promotes the same version through the fleet.
       </>
     ),
   },
   {
-    title: 'Composable Gates',
+    title: 'Move through waves',
     description: (
       <>
-        Combine soak timers, Prometheus metric checks, OCI signature
-        verification, manual approvals, and custom CEL expressions into
-        per-stage gate policies.
+        Select canary, regional, and production clusters with labels. Stages,
+        dependencies, and concurrency decide what can start next.
       </>
     ),
   },
   {
-    title: 'Backend-Agnostic',
+    title: 'Keep the audit trail',
     description: (
       <>
-        Kapro orchestrates Flux, ArgoCD, Helm, and other delivery backends
-        through a pluggable actuator interface. It decides <em>when</em> to
-        deliver; your GitOps tool decides <em>how</em>.
+        Each target records phase, gate evidence, approvals, backend convergence,
+        events, and final outcome in Kubernetes status.
       </>
     ),
   },
@@ -59,12 +56,11 @@ export default function HomepageFeatures(): ReactNode {
       <div className="container">
         <div className={styles.sectionHeader}>
           <Heading as="h2">
-            <span>Promotion decisions</span>
-            <span>for every cluster</span>
+            <span>Learn Kapro in three ideas</span>
           </Heading>
           <p>
-            Kapro handles the fleet-level decision loop while existing delivery
-            systems keep applying changes inside each cluster.
+            Kapro is easiest to understand as version, waves, and evidence.
+            Existing delivery tools still handle the local rollout.
           </p>
         </div>
         <div className="row">

@@ -31,22 +31,22 @@ function HomepageHeader() {
     <header className={clsx('hero', styles.heroBanner)}>
       <div className={clsx('container', styles.heroInner)}>
         <div className={styles.heroCopy}>
-          <p className={styles.eyebrow}>Fleet promotion control plane</p>
+          <p className={styles.eyebrow}>Fleet promotion for Kubernetes</p>
           <h1 className={styles.heroTitle}>
-            <span>Safe Kubernetes</span>
-            <span>fleet promotion.</span>
+            <span>Promote one version</span>
+            <span>across every cluster.</span>
           </h1>
-          <p className={styles.heroSubtitle}>{siteConfig.tagline}. Kapro decides which clusters receive a version, when, and why.</p>
+          <p className={styles.heroSubtitle}>{siteConfig.tagline}. Kapro plans the waves, checks the gates, asks your delivery backend to apply, and records why each cluster moved.</p>
           <div className={styles.badges}>
-            <span className={styles.badge}>Open source</span>
-            <span className={styles.badge}>Apache 2.0</span>
-            <span className={styles.badge}>Flux compatible</span>
+            <span className={styles.badge}>OCI-first</span>
+            <span className={styles.badge}>Wave based</span>
+            <span className={styles.badge}>GitOps friendly</span>
           </div>
           <div className={styles.buttons}>
             <Link
               className="button button--primary button--lg"
               to="/docs/intro">
-              Get Started
+              Learn Kapro
             </Link>
             <Link
               className="button button--secondary button--lg"

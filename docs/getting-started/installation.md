@@ -2,19 +2,27 @@
 sidebar_position: 1
 ---
 
-# Installation
+# Install Kapro
 
-The recommended install path is the Helm chart in `charts/kapro-operator`. It installs the CRDs, controller Deployment, ServiceAccount, RBAC, admission webhooks, and baseline approval service together.
+Kapro runs as an operator in a hub cluster.
 
-## Prerequisites
+Install it first, then add fleet configuration such as `MemberCluster`,
+`KaproApp`, `Pipeline`, and `Release` objects.
 
-- Kubernetes cluster access with permission to create CRDs and cluster-scoped RBAC.
-- Helm 3.
-- cert-manager when `webhook.enabled=true` (the default).
+## Before You Start
 
-For local clusters without cert-manager, set `webhook.enabled=false`.
+You need:
 
-## Install
+- a Kubernetes cluster for the Kapro hub
+- permission to create CRDs and cluster-scoped RBAC
+- Helm 3
+- cert-manager if admission webhooks are enabled
+
+For a local test cluster, you can disable webhooks.
+
+## Install with Helm
+
+From the Kapro repository:
 
 ```bash
 helm upgrade --install kapro charts/kapro-operator \
@@ -22,7 +30,7 @@ helm upgrade --install kapro charts/kapro-operator \
   --create-namespace
 ```
 
-Local install without admission webhooks:
+For local clusters without cert-manager:
 
 ```bash
 helm upgrade --install kapro charts/kapro-operator \
@@ -31,7 +39,9 @@ helm upgrade --install kapro charts/kapro-operator \
   --set webhook.enabled=false
 ```
 
-Useful baseline settings:
+## Configure Public URLs
+
+Set these when approvals or spokes need to reach the hub:
 
 ```bash
 helm upgrade --install kapro charts/kapro-operator \
@@ -41,21 +51,46 @@ helm upgrade --install kapro charts/kapro-operator \
   --set hubAPIURL=https://hub.example.com:6443
 ```
 
-`externalURL` is used in approval links and Decision API callbacks. `hubAPIURL` should be the hub API server URL reachable from spoke clusters.
+| Value | Meaning |
+|---|---|
+| `externalURL` | Used for approval links and Decision API callbacks. |
+| `hubAPIURL` | Kubernetes API endpoint reachable from spoke clusters. |
 
-## Verify
+## Verify the Install
 
 ```bash
 kubectl -n kapro-system rollout status deployment/kapro-kapro-operator
 kubectl get crd | grep kapro.io
 kubectl -n kapro-system get deploy,svc,sa
+```
+
+Check the operator can read Kapro releases:
+
+```bash
 kubectl auth can-i get releases.kapro.io \
   --as=system:serviceaccount:kapro-system:kapro-kapro-operator
 ```
 
+## What Comes Next
+
+After the operator is running, create the objects that define your fleet:
+
+<div class="kapro-diagram">
+  <div class="kapro-flow">
+    <div class="kapro-node"><strong>MemberCluster</strong><span>Register target clusters.</span></div>
+    <div class="kapro-node"><strong>KaproApp</strong><span>Define the application.</span></div>
+    <div class="kapro-node"><strong>Pipeline</strong><span>Define the rollout waves.</span></div>
+    <div class="kapro-node"><strong>Release</strong><span>Promote a version.</span></div>
+  </div>
+</div>
+
+For a quick local walkthrough, use the [Kind demo](/docs/getting-started/kind-demo).
+
+For a production-style setup, use a [hub config repository](/docs/guides/hub-config).
+
 ## Upgrade
 
-Apply CRD changes first, then upgrade the chart:
+Apply CRDs first, then roll the operator:
 
 ```bash
 kubectl apply -f charts/kapro-operator/crds
@@ -63,26 +98,19 @@ helm upgrade kapro charts/kapro-operator --namespace kapro-system
 kubectl -n kapro-system rollout status deployment/kapro-kapro-operator
 ```
 
+Read the release notes before upgrading a production hub. Some APIs are still
+pre-stable.
+
 ## Uninstall
 
 ```bash
 helm uninstall kapro --namespace kapro-system
 ```
 
-Helm does not delete CRDs on uninstall. After backing up or deleting Kapro custom resources, remove CRDs explicitly:
+Helm does not delete CRDs. Delete them only after backing up or removing Kapro
+custom resources:
 
 ```bash
 kubectl delete -f charts/kapro-operator/crds
 kubectl delete namespace kapro-system
 ```
-
-## Kustomize Bundle
-
-The repository also keeps a Kustomize bundle for simple local installs:
-
-```bash
-kubectl apply -k config/default
-kubectl -n kapro-system rollout status deployment/kapro-operator
-```
-
-The Kustomize bundle disables admission webhooks and uses the published operator image. Use Helm for configurable production installs.

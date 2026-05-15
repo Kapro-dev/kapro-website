@@ -4,101 +4,178 @@ sidebar_position: 1
 
 # Architecture
 
-Kapro uses a **hub-and-spoke architecture**. The hub owns promotion state and decisions. Spokes report cluster health and converge local delivery backends.
+Kapro uses a hub-and-spoke model.
+
+The hub makes promotion decisions. Spoke clusters run or report the local
+delivery work.
+
+```text
+CI -> OCI artifact -> Kapro hub -> selected clusters -> Flux/Argo/Helm apply
+```
+
+## The Big Picture
 
 <div class="kapro-diagram">
   <div class="kapro-flow">
     <div class="kapro-node">
       <strong>OCI registry</strong>
-      <span>Immutable artifact versions produced by CI.</span>
+      <span>Stores immutable versions produced by CI.</span>
     </div>
     <div class="kapro-node">
       <strong>Hub cluster</strong>
-      <span>Kapro operator plans releases, evaluates gates, records status.</span>
+      <span>Runs Kapro controllers and stores release state.</span>
     </div>
     <div class="kapro-node">
-      <strong>Spoke clusters</strong>
-      <span>Cluster controllers report health and desired-version convergence.</span>
+      <strong>MemberClusters</strong>
+      <span>Represent target clusters with labels, health, and backend config.</span>
     </div>
     <div class="kapro-node">
-      <strong>Delivery backends</strong>
-      <span>Flux, Argo CD, Helm, or plugins apply the version locally.</span>
+      <strong>Delivery backend</strong>
+      <span>Flux, Argo CD, Helm, or a plugin applies the selected version.</span>
     </div>
   </div>
 </div>
 
+The hub does not need to own every workload detail. It owns the decision that a
+cluster may move to a version and records whether that decision converged.
+
 ## Hub Cluster
 
-The hub cluster is the source of truth for fleet promotion.
+The hub is the control plane.
 
-| Component | Responsibility |
-|---|---|
-| `ReleaseReconciler` | Drives the pipeline DAG, stage DAG, target activation, and per-target FSM. |
-| `ApprovalReconciler` | Watches `Approval` objects and unblocks targets waiting for human approval. |
-| `CSRApprovalReconciler` | Approves spoke CSRs when bootstrap tokens are valid. |
-| Approval service | Serves signed approve/reject links and release status views. |
-| Plugin registry | Tracks external actuators, gates, and planners. |
+It stores:
 
-## Spoke Clusters
+- `MemberCluster` inventory
+- `KaproApp` definitions
+- `Pipeline` rollout plans
+- `Release` objects
+- `ReleaseTarget` status
+- `Approval` objects
+- lifecycle events and audit status
 
-Each spoke runs a lightweight controller. Its job is intentionally narrow:
+The main controller is the `ReleaseReconciler`. It reads a `Release`, resolves
+the referenced `Pipeline`, selects clusters, creates targets, evaluates gates,
+and waits for convergence.
 
-1. Observe the target version selected by the hub.
-2. Patch the local delivery backend.
-3. Watch local convergence.
-4. Report heartbeat and current versions back to the hub.
+<div class="kapro-diagram">
+  <div class="kapro-grid">
+    <div class="kapro-card">
+      <strong>ReleaseReconciler</strong>
+      <span>Runs the pipeline and target lifecycle.</span>
+    </div>
+    <div class="kapro-card">
+      <strong>ApprovalReconciler</strong>
+      <span>Unblocks targets when an approval is created.</span>
+    </div>
+    <div class="kapro-card">
+      <strong>Plugin registry</strong>
+      <span>Loads actuator, gate, and planner integrations.</span>
+    </div>
+  </div>
+</div>
 
-Spokes use outbound connectivity to the hub. They do not need the hub to open inbound connections into every cluster.
+## Member Clusters
 
-## Release Planning Model
+A `MemberCluster` is Kapro's record for one workload cluster.
+
+It contains:
+
+- labels used by stage selectors
+- cloud, region, tier, and capability metadata
+- delivery backend configuration
+- heartbeat and health status
+- current version observations
+
+Labels are how a pipeline chooses targets:
+
+```yaml
+selector:
+  matchLabels:
+    kapro.io/tier: production
+    kapro.io/region: europe-west3
+```
+
+This is similar to how a Kubernetes `Deployment` selects Pods with labels, but
+the selected things are clusters.
+
+## Pipelines and Stages
+
+A `Pipeline` is a reusable rollout plan. It does not execute by itself.
+
+A stage says:
+
+- which clusters to select
+- what must happen before the stage starts
+- how many targets may run at once
+- which gates must pass
 
 <div class="kapro-diagram">
   <div class="kapro-lanes">
     <div class="kapro-lane">
-      <div><strong>Wave 1</strong><span>canary</span></div>
+      <div><strong>canary</strong><span>tier=canary</span></div>
       <div class="kapro-lane-line"></div>
-      <div class="kapro-clusters"><span class="kapro-cluster active">de-1</span><span class="kapro-cluster active">fi-1</span><span class="kapro-cluster">us-1</span><span class="kapro-cluster">jp-1</span></div>
-      <div class="kapro-status">verified</div>
+      <div class="kapro-clusters"><span class="kapro-cluster active">checkout-canary</span></div>
+      <div class="kapro-status">first</div>
     </div>
     <div class="kapro-lane">
-      <div><strong>Wave 2</strong><span>regional</span></div>
+      <div><strong>production-eu</strong><span>region=europe</span></div>
       <div class="kapro-lane-line"></div>
-      <div class="kapro-clusters"><span class="kapro-cluster active">eu-prod</span><span class="kapro-cluster active">us-prod</span><span class="kapro-cluster">apac-prod</span><span class="kapro-cluster">latam-prod</span></div>
-      <div class="kapro-status">soaking</div>
+      <div class="kapro-clusters"><span class="kapro-cluster active">prod-eu-1</span><span class="kapro-cluster">prod-eu-2</span></div>
+      <div class="kapro-status">after canary</div>
     </div>
     <div class="kapro-lane">
-      <div><strong>Wave 3</strong><span>fleet</span></div>
+      <div><strong>production-global</strong><span>tier=production</span></div>
       <div class="kapro-lane-line"></div>
-      <div class="kapro-clusters"><span class="kapro-cluster">edge-a</span><span class="kapro-cluster">edge-b</span><span class="kapro-cluster">edge-c</span><span class="kapro-cluster">edge-d</span></div>
-      <div class="kapro-status waiting">waiting</div>
+      <div class="kapro-clusters"><span class="kapro-cluster">prod-us</span><span class="kapro-cluster">prod-apac</span></div>
+      <div class="kapro-status waiting">last</div>
     </div>
   </div>
 </div>
 
-Kapro turns selectors and pipeline stages into concrete `ReleaseTarget` objects. Each target advances independently, while stage dependencies and concurrency limits control the wave.
+## Releases and Targets
 
-## CRD Inventory
+A `Release` is one execution:
 
-| CRD | Kind | Purpose |
-|-----|------|---------|
-| `kaproapps.kapro.io` | `KaproApp` | Application or component metadata. |
-| `pipelines.kapro.io` | `Pipeline` | Reusable stage DAG template. |
-| `releases.kapro.io` | `Release` | Execution owner for a rollout. |
-| `releasetargets.kapro.io` | `ReleaseTarget` | Per-target execution state. |
-| `releasetriggers.kapro.io` | `ReleaseTrigger` | Autonomous release creation from OCI changes. |
-| `memberclusters.kapro.io` | `MemberCluster` | Fleet inventory and observed state. |
-| `approvals.kapro.io` | `Approval` | Human approve/reject signal. |
-| `pluginregistrations.kapro.io` | `PluginRegistration` | External plugin registration. |
-| `agentpolicies.kapro.io` | `AgentPolicy` | Agent-driven promotion policy. |
+```text
+promote checkout version v1.8.2 using pipeline checkout-progressive
+```
 
-## Extension Interfaces
+Kapro expands the release into `ReleaseTarget` state:
 
-Kapro keeps extension points narrow:
+```text
+checkout-v1.8.2 / checkout-canary -> Converged
+checkout-v1.8.2 / prod-eu-1       -> Soaking
+checkout-v1.8.2 / prod-us         -> Pending
+```
 
-| Interface | Question |
-|-----------|----------|
-| Actuator | Apply this version to this cluster. |
-| Gate | May this target advance? |
-| Planner | Which targets should this stage bind, and in what order? |
+That per-target status is what makes debugging simple. You can see exactly
+which cluster is blocked and why.
 
-This keeps the promotion layer understandable while still allowing platform teams to integrate their own delivery systems and policy checks.
+## Actuators
+
+An actuator is the adapter between Kapro and the delivery backend.
+
+Kapro says:
+
+```text
+target prod-eu-1 may receive checkout:v1.8.2
+```
+
+The actuator translates that into backend-specific work, such as patching a Flux
+resource, an Argo CD Application, a Helm release, or an internal delivery API.
+
+The backend still owns local rollout behavior. Kapro only tracks whether the
+target converged to the selected version.
+
+## Extension Boundaries
+
+Kapro has three narrow extension surfaces:
+
+| Extension | Question it answers |
+|---|---|
+| Actuator | How do I apply this version to this target? |
+| Gate | May this target advance now? |
+| Planner | Which eligible targets should bind first? |
+
+Extensions do backend-specific work. Kapro keeps ownership of release state,
+ordering, retries, failures, approvals, and status.

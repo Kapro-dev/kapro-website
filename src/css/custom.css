@@ -622,7 +622,19 @@ a[class*='tag_']:hover {
 .kapro-lane-line {
   background: linear-gradient(90deg, rgba(37, 99, 235, 0.28), rgba(15, 138, 106, 0.34));
   height: 2px;
+  overflow: hidden;
   position: relative;
+}
+
+.kapro-lane-line::before {
+  animation: kaproLineFlow 2.8s ease-in-out infinite;
+  background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.7), transparent);
+  content: "";
+  height: 2px;
+  left: -45%;
+  position: absolute;
+  top: 0;
+  width: 45%;
 }
 
 .kapro-lane-line::after {
@@ -653,6 +665,7 @@ a[class*='tag_']:hover {
 }
 
 .kapro-cluster.active {
+  animation: kaproClusterPulse 3s ease-in-out infinite;
   background: var(--kapro-green-soft);
   border-color: #a6ddce;
   color: var(--kapro-green);
@@ -682,6 +695,31 @@ a[class*='tag_']:hover {
 
 .kapro-bad {
   border-color: #e5bd8b;
+}
+
+@keyframes kaproLineFlow {
+  0% {
+    transform: translateX(0);
+  }
+  70%, 100% {
+    transform: translateX(320%);
+  }
+}
+
+@keyframes kaproClusterPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(15, 138, 106, 0);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(15, 138, 106, 0.12);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kapro-lane-line::before,
+  .kapro-cluster.active {
+    animation: none;
+  }
 }
 
 @media (max-width: 860px) {

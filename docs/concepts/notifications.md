@@ -2,44 +2,109 @@
 sidebar_position: 5
 ---
 
-# Notifications
+# Events and Notifications
 
-Kapro emits lifecycle events at every phase transition. These events drive integrations with chat systems, audit pipelines, incident management tools, and custom controllers.
+Kapro records release state in Kubernetes. It can also send lifecycle events to
+systems outside the cluster.
 
-## Delivery Methods
+Use events when another system needs to know what happened:
 
-### Webhook
+- chat or incident bots
+- audit pipelines
+- dashboards
+- SIEM systems
+- custom platform controllers
+- GitHub Actions or repository dispatch
 
-Send events as HTTP POST requests to any endpoint. Supports plain JSON and CloudEvents v1.0 structured JSON format.
+## What Kapro Emits
 
-### Slack
+Kapro emits semantic events for important lifecycle moments:
 
-Send formatted messages to Slack channels via incoming webhooks.
+<div class="kapro-diagram">
+  <div class="kapro-flow">
+    <div class="kapro-node">
+      <strong>Release</strong>
+      <span>started, completed, failed, rollback started.</span>
+    </div>
+    <div class="kapro-node">
+      <strong>Stage</strong>
+      <span>completed or blocked.</span>
+    </div>
+    <div class="kapro-node">
+      <strong>Gate</strong>
+      <span>passed, failed, or approval required.</span>
+    </div>
+    <div class="kapro-node">
+      <strong>Target</strong>
+      <span>pending, applying, converged, failed, skipped.</span>
+    </div>
+  </div>
+</div>
 
-### Email
+The event type is the stable integration signal. The phase tells you which
+target lifecycle state caused it.
 
-Send email notifications for approval requests and release lifecycle events.
+## Plain JSON or CloudEvents
 
-## CloudEvents Support
+Webhook notifications can be sent as plain JSON or CloudEvents v1.0 structured
+JSON.
 
-When `format: cloudevents` is set, webhooks send CloudEvents v1.0 structured JSON. CloudEvents IDs are stable for de-duplication.
+CloudEvents are useful when events flow through shared infrastructure such as
+Knative Eventing, SIEM pipelines, or organization-wide event routers.
 
-## NotificationProvider and NotificationPolicy (Preview)
+Example event:
 
-Kubernetes-native APIs for separating notification destination from subscription logic:
+```json
+{
+  "type": "kapro.release.target.converged",
+  "phase": "Converged",
+  "release": "checkout-v1-8-2",
+  "pipeline": "checkout-progressive",
+  "stage": "production-eu",
+  "target": "prod-eu",
+  "version": "oci://registry.example.com/checkout@sha256:...",
+  "message": "target converged"
+}
+```
 
-- **NotificationProvider**: Declares _where_ events can be sent (webhook, slack, email, git).
-- **NotificationPolicy**: Declares _when_ events should be sent. Filters by event type, Release labels, pipelines, stages, targets, and phases.
+## Notification Configuration
 
-These APIs are in preview. Inline gate notifications continue to be the active runtime configuration path.
+Inline gate notifications are the active runtime path today:
 
-## Integration Patterns
+```yaml
+gate:
+  mode: manual
+  notifications:
+    - type: webhook
+      events:
+        - kapro.release.failed
+        - kapro.release.gate.failed
+        - kapro.release.approval.required
+      webhook:
+        url: https://events.example.com/kapro
+        format: cloudevents
+```
 
-| Integration | Recommended pattern |
+## Provider and Policy APIs
+
+Kapro also defines preview APIs for a Kubernetes-native notification model:
+
+| Object | Meaning |
 |---|---|
-| Slack or Teams bot | Receive CloudEvents and render selected event types |
-| Git audit log | Commit a compact YAML record on kapro.release.completed |
-| SIEM / audit sink | Ingest all CloudEvents and index by source, subject, and type |
-| GitHub Actions | Use a small webhook receiver to trigger repository_dispatch |
+| `NotificationProvider` | Where events can go: webhook, Slack, email, Git, or another destination. |
+| `NotificationPolicy` | When events go there: filters by event type, release label, stage, target, and phase. |
 
-See the [Events reference](/docs/reference/events) for the complete event catalog.
+These preview resources separate destination configuration from subscription
+logic. Inline notifications remain the runtime path until provider/policy
+dispatch is enabled.
+
+## Common Patterns
+
+| Goal | Pattern |
+|---|---|
+| Notify SRE before production | Send `kapro.release.approval.required` to chat. |
+| Keep an audit stream | Send CloudEvents to a SIEM or event broker. |
+| Trigger downstream tests | Send `kapro.release.stage.completed` to a webhook receiver. |
+| Explain failed releases | Include gate evidence in notifications and dashboards. |
+
+See the [Events reference](/docs/reference/events) for the full event catalog.
