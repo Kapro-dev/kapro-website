@@ -6,6 +6,10 @@ sidebar_position: 3
 
 This example builds a rollout from zero to a full fleet.
 
+Source repository:
+
+- [Progressive rollout example](https://github.com/Kapro-dev/kapro-example-progressive-rollout)
+
 The goal:
 
 ```text

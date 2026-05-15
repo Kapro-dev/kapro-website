@@ -7,6 +7,11 @@ sidebar_position: 4
 This example shows how Kapro pauses a target until automated evidence and human
 approval are both present.
 
+Source repositories:
+
+- [Progressive rollout example](https://github.com/Kapro-dev/kapro-example-progressive-rollout)
+- [Retail fleet example](https://github.com/Kapro-dev/kapro-example-retail-fleet)
+
 ## Goal
 
 Canary should move automatically. Production should wait.

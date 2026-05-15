@@ -32,6 +32,8 @@ const sidebars: SidebarsConfig = {
         'examples/argo',
         'examples/progressive-rollout',
         'examples/approval-gates',
+        'examples/hub-config-repository',
+        'examples/retail-fleet',
       ],
     },
     {

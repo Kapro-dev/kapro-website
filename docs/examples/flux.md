@@ -6,6 +6,11 @@ sidebar_position: 1
 
 Flux is the reference delivery backend for Kapro.
 
+Source repositories:
+
+- [Flux pull example](https://github.com/Kapro-dev/kapro-example-flux-pull)
+- [Flux push example](https://github.com/Kapro-dev/kapro-example-flux-push)
+
 In this example, Kapro decides when a cluster may receive `checkout:v1.8.2`.
 Flux does the local reconciliation inside the target cluster.
 

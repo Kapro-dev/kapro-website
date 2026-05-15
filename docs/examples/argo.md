@@ -7,6 +7,10 @@ sidebar_position: 2
 Kapro's current reference backend is Flux. The repo's typed actuator enum is
 currently `flux`.
 
+Source repository:
+
+- [Argo CD pattern example](https://github.com/Kapro-dev/kapro-example-argo-pattern)
+
 This page explains the Argo CD integration pattern so platform teams can see how
 Argo fits the Kapro model. A production Argo integration should be implemented
 as a Kapro actuator/plugin or added as a supported backend when the API surface
