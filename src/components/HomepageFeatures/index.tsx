@@ -41,10 +41,11 @@ const FeatureList: FeatureItem[] = [
   },
 ];
 
-function Feature({title, description}: FeatureItem) {
+function Feature({title, description, index}: FeatureItem & {index: number}) {
   return (
     <div className={clsx('col col--4')}>
-      <div className="text--center padding-horiz--md">
+      <div className={styles.featureCard}>
+        <span className={styles.featureIndex}>{index + 1}</span>
         <Heading as="h3">{title}</Heading>
         <p>{description}</p>
       </div>
@@ -56,9 +57,16 @@ export default function HomepageFeatures(): ReactNode {
   return (
     <section className={styles.features}>
       <div className="container">
+        <div className={styles.sectionHeader}>
+          <Heading as="h2">One control plane for promotion decisions</Heading>
+          <p>
+            Kapro handles the fleet-level decision loop while existing delivery
+            systems keep applying changes inside each cluster.
+          </p>
+        </div>
         <div className="row">
           {FeatureList.map((props, idx) => (
-            <Feature key={idx} {...props} />
+            <Feature key={idx} index={idx} {...props} />
           ))}
         </div>
       </div>

@@ -30,7 +30,7 @@ const config: Config = {
       {
         docs: {
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/Kapro-dev/kapro/tree/main/docs/',
+          editUrl: 'https://github.com/Kapro-dev/kapro-website/tree/main/',
         },
         blog: {
           showReadingTime: true,
@@ -52,10 +52,11 @@ const config: Config = {
   themeConfig: {
     image: 'img/logo.png',
     colorMode: {
-      respectPrefersColorScheme: true,
+      defaultMode: 'light',
+      disableSwitch: true,
+      respectPrefersColorScheme: false,
     },
     navbar: {
-      title: 'Kapro',
       logo: {
         alt: 'Kapro Logo',
         src: 'img/logo.png',
