@@ -31,13 +31,16 @@ function HomepageHeader() {
     <header className={clsx('hero', styles.heroBanner)}>
       <div className={clsx('container', styles.heroInner)}>
         <div className={styles.heroCopy}>
-          <p className={styles.eyebrow}>Kubernetes fleet promotion control plane</p>
-          <h1 className={styles.heroTitle}>Kubernetes-native fleet promotion.</h1>
-          <p className={styles.heroSubtitle}>{siteConfig.tagline}. Kapro decides which clusters are allowed to receive an artifact version now, and records why.</p>
+          <p className={styles.eyebrow}>Fleet promotion control plane</p>
+          <h1 className={styles.heroTitle}>
+            <span>Safe Kubernetes</span>
+            <span>fleet promotion.</span>
+          </h1>
+          <p className={styles.heroSubtitle}>{siteConfig.tagline}. Kapro decides which clusters receive a version, when, and why.</p>
           <div className={styles.badges}>
             <span className={styles.badge}>Open source</span>
             <span className={styles.badge}>Apache 2.0</span>
-              <span className={styles.badge}>Flux compatible</span>
+            <span className={styles.badge}>Flux compatible</span>
           </div>
           <div className={styles.buttons}>
             <Link

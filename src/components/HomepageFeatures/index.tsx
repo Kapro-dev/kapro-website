@@ -58,7 +58,10 @@ export default function HomepageFeatures(): ReactNode {
     <section className={styles.features}>
       <div className="container">
         <div className={styles.sectionHeader}>
-          <Heading as="h2">One control plane for promotion decisions</Heading>
+          <Heading as="h2">
+            <span>Promotion decisions</span>
+            <span>for every cluster</span>
+          </Heading>
           <p>
             Kapro handles the fleet-level decision loop while existing delivery
             systems keep applying changes inside each cluster.

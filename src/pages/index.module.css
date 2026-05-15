@@ -10,11 +10,13 @@
   display: grid;
   gap: 2.5rem;
   grid-template-columns: minmax(0, 0.9fr) minmax(480px, 1.1fr);
+  min-width: 0;
   position: relative;
   z-index: 1;
 }
 
 .heroCopy {
+  min-width: 0;
   text-align: left;
 }
 
@@ -35,6 +37,10 @@
   letter-spacing: 0;
   line-height: 0.96;
   margin: 0;
+}
+
+.heroTitle span {
+  display: block;
 }
 
 .heroSubtitle {
@@ -428,7 +434,7 @@
 @media screen and (max-width: 996px) {
   .heroBanner {
     min-height: auto;
-    padding: 3.5rem 0 3rem;
+    padding: 3rem 0 2.5rem;
   }
 
   .heroInner {
@@ -452,6 +458,82 @@
   .heroVisual {
     max-width: 640px;
     margin: 0 auto;
+  }
+}
+
+@media screen and (max-width: 720px) {
+  .heroBanner {
+    padding: 2.25rem 0 2rem;
+  }
+
+  .heroInner {
+    display: block;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .heroCopy {
+    box-sizing: border-box;
+    margin: 0 auto;
+    max-width: 18rem;
+    padding: 0 0.25rem;
+    width: min(100%, 18rem);
+  }
+
+  .eyebrow {
+    font-size: 0.72rem;
+    line-height: 1.25;
+    margin-bottom: 0.8rem;
+    overflow-wrap: anywhere;
+  }
+
+  .heroTitle {
+    font-size: clamp(1.85rem, 8.8vw, 2.35rem);
+    line-height: 1.08;
+    overflow-wrap: anywhere;
+  }
+
+  .heroSubtitle {
+    font-size: 1rem;
+    line-height: 1.58;
+    margin-top: 1rem;
+    max-width: 100%;
+    overflow-wrap: break-word;
+  }
+
+  .badges {
+    gap: 0.45rem;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 1.15rem;
+    max-width: 18rem;
+  }
+
+  .badge {
+    font-size: 0.72rem;
+    max-width: 100%;
+    padding: 0.34rem 0.58rem;
+  }
+
+  .buttons {
+    display: grid;
+    gap: 0.65rem;
+    grid-template-columns: 1fr;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 1.35rem;
+    max-width: 16rem;
+  }
+
+  .buttons :global(.button) {
+    box-sizing: border-box;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .heroVisual {
+    display: none;
   }
 }
 
