@@ -1,20 +1,46 @@
 .heroBanner {
-  padding: 4rem 0;
+  padding: 5rem 0 4rem;
   text-align: center;
   position: relative;
   overflow: hidden;
-}
-
-@media screen and (max-width: 996px) {
-  .heroBanner {
-    padding: 2rem;
-  }
+  min-height: 520px;
 }
 
 .heroLogo {
-  width: 180px;
+  width: 200px;
   height: auto;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  animation: bounce 3s ease-in-out infinite;
+  filter: drop-shadow(0 8px 24px rgba(37, 99, 235, 0.15));
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  15% { transform: translateY(-14px); }
+  30% { transform: translateY(0); }
+  45% { transform: translateY(-8px); }
+  60% { transform: translateY(0); }
+}
+
+.badges {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 1rem 0 1.5rem;
+  flex-wrap: wrap;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  background: rgba(37, 99, 235, 0.08);
+  color: #2563eb;
+  border: 1px solid rgba(37, 99, 235, 0.15);
 }
 
 .buttons {
@@ -22,4 +48,79 @@
   align-items: center;
   justify-content: center;
   gap: 1rem;
+}
+
+/* Animated cluster grid behind hero */
+.clusterGrid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 0;
+  opacity: 0.07;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.clusterNode {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: clusterPulse 4s ease-in-out infinite;
+}
+
+.clusterIcon {
+  font-size: 2.5rem;
+  color: #2563eb;
+}
+
+@keyframes clusterPulse {
+  0%, 100% { opacity: 0.3; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+/* Wave lines */
+.waveLines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.06;
+}
+
+.wavePath {
+  fill: none;
+  stroke: #2563eb;
+  stroke-width: 2;
+  animation: waveFlow 6s ease-in-out infinite;
+}
+
+@keyframes waveFlow {
+  0% { stroke-dasharray: 0 1200; stroke-dashoffset: 0; }
+  50% { stroke-dasharray: 600 600; stroke-dashoffset: -300; }
+  100% { stroke-dasharray: 0 1200; stroke-dashoffset: -1200; }
+}
+
+@media screen and (max-width: 996px) {
+  .heroBanner {
+    padding: 3rem 1rem;
+    min-height: auto;
+  }
+  .heroLogo {
+    width: 150px;
+  }
+  .buttons {
+    flex-direction: column;
+  }
+  .clusterGrid {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+  }
 }
