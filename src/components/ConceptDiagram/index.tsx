@@ -507,7 +507,7 @@ const layoutById: Record<DiagramId, LayoutKind> = {
   actuators: 'swimlane',
   gates: 'state',
   'plugins-and-conformance': 'pipeline',
-  'agent-policies': 'split',
+  'agent-policies': 'pipeline',
   'api-stability': 'matrix',
   events: 'fanout',
 };
@@ -596,9 +596,11 @@ function NodeBox({
   rx?: number;
 }) {
   const compact = height < 82;
-  const titleLines = compact ? 1 : 2;
-  const noteLines = height < 90 ? 1 : 2;
-  const noteY = compact ? y + height - 13 : y + height - 30;
+  const titleMax = Math.max(10, Math.floor((width - 28) / 7.4));
+  const noteMax = Math.max(12, Math.floor((width - 28) / 6.6));
+  const titleLines = compact && label.length <= titleMax ? 1 : 2;
+  const noteLines = compact && titleLines > 1 ? 0 : height < 90 ? 1 : 2;
+  const noteY = compact ? y + height - 14 : y + height - 30;
 
   return (
     <g>
@@ -612,8 +614,8 @@ function NodeBox({
         x={x}
         y={y}
       />
-      <SvgText lines={titleLines} max={compact ? 18 : 15} text={label} x={x + 14} y={y + 27} />
-      <SvgText className="concept-diagram__node-note" lineHeight={14} lines={noteLines} max={18} text={note} x={x + 14} y={noteY} />
+      <SvgText lines={titleLines} max={titleMax} text={label} x={x + 14} y={y + 27} />
+      <SvgText className="concept-diagram__node-note" lineHeight={14} lines={noteLines} max={noteMax} text={note} x={x + 14} y={noteY} />
     </g>
   );
 }
@@ -736,7 +738,7 @@ function ExampleNote({diagram, colors, x = 36, y = 308, width = 888}: {diagram: 
 function renderPipeline(diagram: ConceptDiagramData, colors: Palette, arrowId: string) {
   const width = 1040;
   const nodes = diagram.nodes.slice(0, 6);
-  const w = nodes.length > 5 ? 132 : 150;
+  const w = nodes.length > 5 ? 142 : 158;
   const gap = (width - 72 - nodes.length * w) / Math.max(1, nodes.length - 1);
   return (
     <svg viewBox={`0 0 ${width} 410`} preserveAspectRatio="xMinYMin meet">
@@ -748,7 +750,7 @@ function renderPipeline(diagram: ConceptDiagramData, colors: Palette, arrowId: s
         const active = index === Math.floor(nodes.length / 2);
         return (
           <g key={node} filter={active ? `url(#${arrowId}-shadow)` : undefined}>
-            {index > 0 ? <ArrowLine arrowId={arrowId} stroke={colors.stroke} x1={x - gap + 12} x2={x - 16} y1={136} y2={136} /> : null}
+            {index > 0 ? <ArrowLine arrowId={arrowId} stroke={colors.stroke} x1={x - gap + 6} x2={x - 8} y1={136} y2={136} /> : null}
             <NodeBox fill={active ? colors.fill : '#ffffff'} height={116} label={node} note={diagram.notes[index] ?? ''} stroke={active ? colors.stroke : '#334155'} width={w} x={x} y={78} />
           </g>
         );
@@ -762,25 +764,25 @@ function renderStack(diagram: ConceptDiagramData, colors: Palette, arrowId: stri
   const width = 960;
   const nodes = diagram.nodes.slice(0, 6);
   return (
-    <svg viewBox={`0 0 ${width} 520`} preserveAspectRatio="xMinYMin meet">
+    <svg viewBox={`0 0 ${width} 560`} preserveAspectRatio="xMinYMin meet">
       <DiagramDefs arrowId={arrowId} colors={colors} />
-      <rect className="concept-diagram__paper" height="500" rx="18" width="944" x="8" y="8" />
+      <rect className="concept-diagram__paper" height="540" rx="18" width="944" x="8" y="8" />
       <SvgText className="concept-diagram__sketch-title" max={90} text={diagram.idea} x={36} y={42} />
       {nodes.map((node, index) => {
-        const y = 72 + index * 54;
+        const y = 72 + index * 60;
         const active = index === Math.floor(nodes.length / 2);
         return (
           <g key={node}>
-            <circle cx="122" cy={y + 22} fill={active ? colors.stroke : '#64748b'} r="11" />
-            <text className="concept-diagram__step-number" x="118" y={y + 27}>{index + 1}</text>
-            <rect fill={active ? colors.fill : '#ffffff'} height="44" rx="8" stroke={active ? colors.stroke : '#334155'} strokeWidth="2" width="720" x="156" y={y} />
-            <text className="concept-diagram__node-title" x="178" y={y + 27}>{node}</text>
-            <text className="concept-diagram__node-note" x="468" y={y + 27}>{diagram.notes[index] ?? ''}</text>
-            {index < nodes.length - 1 ? <ArrowLine arrowId={arrowId} stroke={colors.stroke} x1={122} x2={122} y1={y + 38} y2={y + 68} /> : null}
+            <circle cx="122" cy={y + 25} fill={active ? colors.stroke : '#64748b'} r="11" />
+            <text className="concept-diagram__step-number" x="118" y={y + 30}>{index + 1}</text>
+            <rect fill={active ? colors.fill : '#ffffff'} height="50" rx="8" stroke={active ? colors.stroke : '#334155'} strokeWidth="2" width="720" x="156" y={y} />
+            <SvgText className="concept-diagram__node-title" lines={1} max={28} text={node} x={178} y={y + 24} />
+            <SvgText className="concept-diagram__node-note" lines={2} max={46} text={diagram.notes[index] ?? ''} x={468} y={y + 22} />
+            {index < nodes.length - 1 ? <ArrowLine arrowId={arrowId} stroke={colors.stroke} x1={122} x2={122} y1={y + 42} y2={y + 72} /> : null}
           </g>
         );
       })}
-      <ExampleNote colors={colors} diagram={diagram} y={402} />
+      <ExampleNote colors={colors} diagram={diagram} y={448} />
     </svg>
   );
 }
@@ -823,7 +825,7 @@ function renderSwimlane(diagram: ConceptDiagramData, colors: Palette, arrowId: s
   const nodes = diagram.nodes.slice(0, 5);
   const laneY = [78, 158, 238];
   const laneFor = [0, 0, 1, 1, 2];
-  const nodeW = 120;
+  const nodeW = 138;
   const nodeH = 58;
   return (
     <svg viewBox={`0 0 ${width} 430`} preserveAspectRatio="xMinYMin meet">
@@ -838,10 +840,10 @@ function renderSwimlane(diagram: ConceptDiagramData, colors: Palette, arrowId: s
       ))}
       {nodes.map((node, index) => {
         const lane = laneFor[index] ?? 1;
-        const x = 190 + index * 155;
+        const x = 174 + index * 158;
         const y = laneY[lane] + 3;
         const previousLane = laneFor[index - 1] ?? 0;
-        const previousX = 190 + (index - 1) * 155;
+        const previousX = 174 + (index - 1) * 158;
         const previousY = laneY[previousLane] + 3;
         return (
           <g key={node}>
@@ -936,8 +938,8 @@ function renderRepo(diagram: ConceptDiagramData, colors: Palette, arrowId: strin
 function renderWaves(diagram: ConceptDiagramData, colors: Palette, arrowId: string) {
   const width = 1040;
   const nodes = diagram.nodes.slice(0, 5);
-  const cardW = 128;
-  const step = 205;
+  const cardW = 150;
+  const step = 190;
   return (
     <svg viewBox={`0 0 ${width} 430`} preserveAspectRatio="xMinYMin meet">
       <DiagramDefs arrowId={arrowId} colors={colors} />
