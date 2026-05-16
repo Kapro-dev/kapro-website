@@ -2,152 +2,112 @@
 sidebar_position: 2
 ---
 
-# Argo CD Example
+import ConceptDiagram from '@site/src/components/ConceptDiagram';
 
-Kapro's current reference backend is Flux. The repo's typed actuator enum is
-currently `flux`.
+# Argo CD Brownfield Example
 
-Source repository:
+<ConceptDiagram id="argo" />
+
+Argo CD is the current public example path for Kapro brownfield adoption.
+
+Source repositories:
 
 - [Argo CD pattern example](https://github.com/Kapro-dev/kapro-example-argo-pattern)
+- [Hub config example](https://github.com/Kapro-dev/kapro-example-hub-config)
+- [Progressive rollout example](https://github.com/Kapro-dev/kapro-example-progressive-rollout)
+- [Retail fleet example](https://github.com/Kapro-dev/kapro-example-retail-fleet)
 
-This page explains the Argo CD integration pattern so platform teams can see how
-Argo fits the Kapro model. A production Argo integration should be implemented
-as a Kapro actuator/plugin or added as a supported backend when the API surface
-is ready.
+## What The Example Shows
 
-## The Pattern
+The Argo pattern repository contains common objects users already have:
+
+- a plain Argo `Application`;
+- an `ApplicationSet` with Git file generator input;
+- an app-of-apps root that should be observed but not promoted directly.
+
+Kapro adds the promotion layer around that topology:
 
 <div class="kapro-diagram">
   <div class="kapro-flow">
-    <div class="kapro-node"><strong>Kapro</strong><span>Decides prod-eu may receive v1.8.2.</span></div>
-    <div class="kapro-node"><strong>Argo actuator</strong><span>Updates the Application or ApplicationSet revision.</span></div>
-    <div class="kapro-node"><strong>Argo CD</strong><span>Syncs and health-checks the app.</span></div>
-    <div class="kapro-node"><strong>Kapro status</strong><span>Records converged, failed, or waiting.</span></div>
+    <div class="kapro-node"><strong>BackendProfile</strong><span>Observe Argo Applications, ApplicationSets, and cluster Secrets.</span></div>
+    <div class="kapro-node"><strong>PromotionSource</strong><span>Map units to targetRevision or Git generator fields.</span></div>
+    <div class="kapro-node"><strong>PromotionPlan</strong><span>Define canary, regional, and production waves.</span></div>
+    <div class="kapro-node"><strong>PromotionRun</strong><span>Promote one or more unit versions.</span></div>
   </div>
 </div>
 
-The important boundary is the same as Flux:
+## Repository Layout
 
-- Kapro decides **when and where**.
-- Argo CD decides **how the app syncs inside the cluster**.
-
-## Example Argo Application
-
-An Argo CD Application might point at an OCI-backed Helm chart or a Git path
-whose version parameter is controlled by the actuator:
-
-```yaml
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: checkout-prod-eu
-  namespace: argocd
-spec:
-  project: checkout
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: checkout
-  source:
-    repoURL: oci://registry.example.com/platform/charts
-    chart: checkout
-    targetRevision: v1.8.2
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
+```text
+argocd/     Existing Argo CD Application, ApplicationSet, and env files
+backends/   Observe-first Argo BackendProfile
+sources/    PromotionSource mappings generated from the Argo repo shape
+promotionplans/  Kapro PromotionPlan that drives promotion
+promotionruns/   PromotionRun intent
 ```
 
-An Argo actuator would update `spec.source.targetRevision` or another agreed
-version field, then watch Argo health and sync status.
+## Discover Existing Argo Topology
 
-## Example MemberCluster Shape
+```bash
+kapro adopt argo . --out kapro-connect --name checkout --force
+```
 
-Today, use the supported Flux backend in production. An Argo-capable actuator
-would use a shape like this once the backend is registered:
+This generates reviewable Kapro files:
+
+```text
+kapro-connect/backends/checkout-observe.yaml
+kapro-connect/sources/checkout.yaml
+kapro-connect/discovery/argo-discovery.yaml
+kapro-connect/discovery/kapro-git-map.yaml
+```
+
+Start in observe mode. Review selected, skipped, and unsupported objects before
+switching a backend profile to `managementPolicy: Adopt`.
+
+## Promotion Units
+
+An Argo `PromotionSource` can contain units like:
 
 ```yaml
 apiVersion: kapro.io/v1alpha1
-kind: MemberCluster
+kind: PromotionSource
 metadata:
-  name: prod-eu
-  labels:
-    kapro.io/tier: production
-    kapro.io/region: europe-west3
+  name: checkout
 spec:
-  actuator:
-    mode: push
-    backend: argo
-    push:
+  backendRef: argo
+  units:
+    - name: api
+      backendKind: ArgoApplicationSource
       namespace: argocd
-      parameters:
-        application: checkout-prod-eu
-        revisionField: spec.source.targetRevision
+      sourcePath: argocd/application.yaml
+      versionField: spec.source.targetRevision
+    - name: pos-server
+      backendKind: GitJSONField
+      namespace: argocd
+      sourcePath: argocd/applicationset.yaml
+      versionField: argocd/environments/*.json:posServerVersion
 ```
 
-Treat this as an integration design example, not a shipped backend guarantee.
+The first unit changes an Application revision. The second changes a Git file
+that feeds an ApplicationSet generator.
 
-## Pipeline Stays the Same
+## What Argo Still Owns
 
-The pipeline does not need to know the backend details:
+Argo CD still owns cluster Secrets, repository credentials, Projects, sync
+policy, hooks, health, drift correction, and local rollout.
 
-```yaml
-apiVersion: kapro.io/v1alpha1
-kind: Pipeline
-metadata:
-  name: checkout-argo-progressive
-spec:
-  stages:
-    - name: canary
-      selector:
-        matchLabels:
-          kapro.io/tier: canary
+Kapro writes only reviewed promotion fields after adoption: selected
+`targetRevision` fields or explicit Git generator input fields.
 
-    - name: production
-      selector:
-        matchLabels:
-          kapro.io/tier: production
-      strategy:
-        maxParallel: 1
-      dependsOn:
-        - stage: canary
-          requiredSoakTime: 30m
-      gate:
-        mode: manual
-        approval:
-          required: true
-          approvers: ["sre-team"]
+## E2E Proof
+
+The Kapro source repo includes a live Argo E2E:
+
+```bash
+scripts/argo-e2e.sh run
 ```
 
-That is the key design point. Stages, gates, approvals, and target status are
-Kapro concepts. Backend mutation is an actuator detail.
-
-## What the Argo Actuator Would Report
-
-An Argo actuator should normalize Argo state into Kapro target status:
-
-| Argo signal | Kapro meaning |
-|---|---|
-| Application synced and healthy | Target can become `Converged`. |
-| Application progressing | Target remains `Applying`. |
-| Sync failed | Target can become `Failed`. |
-| Health degraded | Gate or apply result should block progression. |
-| Unknown health | Return inconclusive or keep applying, depending on policy. |
-
-## Why This Is Useful
-
-Many organizations already use Argo CD for local reconciliation. Kapro does not
-need to replace it. Kapro can add the missing fleet-level layer:
-
-<div class="kapro-diagram">
-  <div class="kapro-split">
-    <div class="kapro-card kapro-good">
-      <strong>Kapro owns</strong>
-      <span>waves, approvals, evidence, target ordering, and release status.</span>
-    </div>
-    <div class="kapro-card">
-      <strong>Argo CD owns</strong>
-      <span>Application sync, drift correction, local health, and Kubernetes apply behavior.</span>
-    </div>
-  </div>
-</div>
+It installs Argo CD and Kapro in Kind, serves a throwaway Git repo, runs
+`kapro adopt argo`, applies generated mappings, promotes repo-native Argo
+fields, creates a Kapro `PromotionRun`, and waits for selected Applications to
+become `Synced` and `Healthy`.

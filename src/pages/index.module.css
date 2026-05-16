@@ -129,7 +129,7 @@
   padding: 1rem;
 }
 
-.pipelineTrack {
+.promotionplanTrack {
   align-items: stretch;
   display: grid;
   gap: 0.65rem;
@@ -538,7 +538,7 @@
 }
 
 @media screen and (max-width: 520px) {
-  .pipelineTrack {
+  .promotionplanTrack {
     grid-template-columns: 1fr;
   }
 

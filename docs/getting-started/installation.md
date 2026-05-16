@@ -2,12 +2,17 @@
 sidebar_position: 1
 ---
 
+import ConceptDiagram from '@site/src/components/ConceptDiagram';
+
 # Install Kapro
+
+<ConceptDiagram id="installation" />
 
 Kapro runs as an operator in a hub cluster.
 
-Install it first, then add fleet configuration such as `MemberCluster`,
-`KaproBundle`, `Pipeline`, and `Release` objects.
+Install it first, then add fleet configuration such as `FleetCluster`,
+`BackendProfile`, `PromotionSource`, `PromotionPlan`, `PromotionTrigger`,
+`PluginRegistration`, and `PromotionRun` objects.
 
 ## Before You Start
 
@@ -64,11 +69,26 @@ kubectl get crd | grep kapro.io
 kubectl -n kapro-system get deploy,svc,sa
 ```
 
-Check the operator can read Kapro releases:
+Check the operator can read Kapro PromotionRuns:
 
 ```bash
-kubectl auth can-i get releases.kapro.io \
+kubectl auth can-i get PromotionRuns.kapro.io \
   --as=system:serviceaccount:kapro-system:kapro-kapro-operator
+```
+
+For clean-clone verification from the Kapro source repo:
+
+```bash
+scripts/verify-install.sh render
+scripts/verify-install.sh cluster
+```
+
+Render-only checks that do not require a cluster:
+
+```bash
+helm lint charts/kapro-operator
+helm template kapro charts/kapro-operator --namespace kapro-system --include-crds
+kubectl kustomize config/default
 ```
 
 ## What Comes Next
@@ -77,16 +97,56 @@ After the operator is running, create the objects that define your fleet:
 
 <div class="kapro-diagram">
   <div class="kapro-flow">
-    <div class="kapro-node"><strong>MemberCluster</strong><span>Register target clusters.</span></div>
-    <div class="kapro-node"><strong>KaproBundle</strong><span>Define components and chart sources.</span></div>
-    <div class="kapro-node"><strong>Pipeline</strong><span>Define the rollout waves.</span></div>
-    <div class="kapro-node"><strong>Release</strong><span>Promote a version.</span></div>
+    <div class="kapro-node"><strong>FleetCluster</strong><span>Register target clusters.</span></div>
+    <div class="kapro-node"><strong>BackendProfile</strong><span>Select Argo, Flux, or an external backend.</span></div>
+    <div class="kapro-node"><strong>PromotionSource</strong><span>Define promotion units and write fields.</span></div>
+    <div class="kapro-node"><strong>PromotionPlan</strong><span>Define the rollout waves.</span></div>
+    <div class="kapro-node"><strong>PromotionTrigger</strong><span>Optionally observe trusted OCI artifacts.</span></div>
+    <div class="kapro-node"><strong>PromotionRun</strong><span>Promote a version.</span></div>
   </div>
 </div>
 
 For a quick local walkthrough, use the [Kind demo](/docs/getting-started/kind-demo).
 
 For a production-style setup, use a [hub config repository](/docs/guides/hub-config).
+
+For GKE Fleet onboarding, use [fleet discovery](/docs/guides/fleet-discovery).
+
+For Argo or Flux brownfield validation, use [E2E validation](/docs/guides/e2e-validation).
+
+## Optional Plugin Gateway
+
+The plugin gateway is an opt-in runtime preview. Enabling it sets
+`KAPRO_ENABLE_PLUGIN_GATEWAY=true`; it does not install plugin services for you.
+
+```bash
+helm upgrade --install kapro charts/kapro-operator \
+  --namespace kapro-system \
+  --create-namespace \
+  --set pluginGateway.enabled=true
+```
+
+Then apply a plugin service and `PluginRegistration`, for example:
+
+```bash
+kubectl apply -f examples/plugins/slo-gate-registration.yaml
+kubectl -n kapro-system rollout restart deployment/kapro-kapro-operator
+```
+
+Ready backend adapter and gate registrations are loaded at startup when the
+gateway is enabled. Run the matching KAI, KGI, or KPI conformance package
+before enabling a new plugin image in production.
+
+## Kustomize Install Path
+
+The Kapro source repo also keeps a Kustomize install path for simple local installs:
+
+```bash
+kubectl apply -k config/default
+kubectl -n kapro-system rollout status deployment/kapro-operator
+```
+
+Use Helm for configurable production installs.
 
 ## Upgrade
 

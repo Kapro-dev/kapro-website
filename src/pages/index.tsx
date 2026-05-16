@@ -7,12 +7,12 @@ import HomepageFeatures from '@site/src/components/HomepageFeatures';
 
 import styles from './index.module.css';
 
-const gates = ['Signature', 'Metrics', 'Soak', 'Approval'];
+const gates = ['Signature', 'Planner', 'Metrics', 'Approval'];
 
 const waves = [
-  {name: 'Wave 1', scope: 'canary', status: 'verified', active: 3},
+  {name: 'Wave 1', scope: 'canary', status: 'converged', active: 3},
   {name: 'Wave 2', scope: 'regional', status: 'soaking', active: 2},
-  {name: 'Wave 3', scope: 'global', status: 'queued', active: 0},
+  {name: 'Wave 3', scope: 'fleet', status: 'queued', active: 0},
 ];
 
 function KubernetesMark() {
@@ -33,14 +33,15 @@ function HomepageHeader() {
         <div className={styles.heroCopy}>
           <p className={styles.eyebrow}>Fleet promotion for Kubernetes</p>
           <h1 className={styles.heroTitle}>
-            <span>Promote one version</span>
-            <span>across every cluster.</span>
+            <span>Git defines the fleet.</span>
+            <span>Kapro promotes the version.</span>
           </h1>
-          <p className={styles.heroSubtitle}>{siteConfig.tagline}. Kapro plans the waves, checks the gates, asks your delivery backend to apply, and records why each cluster moved.</p>
+          <p className={styles.heroSubtitle}>{siteConfig.tagline}. Kapro reads reviewed hub configuration, discovers Argo CD or Flux topology, maps PromotionUnits, plans waves, calls your delivery backend, and records why each cluster moved.</p>
           <div className={styles.badges}>
-            <span className={styles.badge}>OCI-first</span>
-            <span className={styles.badge}>Wave based</span>
-            <span className={styles.badge}>GitOps friendly</span>
+            <span className={styles.badge}>Git hub config</span>
+            <span className={styles.badge}>Argo and Flux</span>
+            <span className={styles.badge}>PromotionUnits</span>
+            <span className={styles.badge}>Plugin ready</span>
           </div>
           <div className={styles.buttons}>
             <Link
@@ -56,21 +57,21 @@ function HomepageHeader() {
           </div>
         </div>
 
-        <div className={styles.heroVisual} aria-label="Animated Kapro promotion pipeline">
+        <div className={styles.heroVisual} aria-label="Animated Kapro promotion PromotionPlan">
           <div className={styles.visualHeader}>
             <img src="img/logo.png" alt="Kapro" className={styles.heroLogo} />
             <div>
-              <span className={styles.visualKicker}>Release</span>
-              <strong>catalog-api:v1.8.2</strong>
+              <span className={styles.visualKicker}>PromotionSource</span>
+              <strong>checkout/api v1.8.2</strong>
             </div>
           </div>
 
           <div className={styles.controlPlane}>
-            <div className={styles.pipelineTrack} aria-label="Kapro release pipeline">
+            <div className={styles.promotionplanTrack} aria-label="Kapro PromotionRun PromotionPlan">
               <div className={styles.stageCard}>
-                <span className={styles.cardLabel}>Artifact</span>
-                <strong>catalog-api</strong>
-                <code>v1.8.2</code>
+                <span className={styles.cardLabel}>Git config</span>
+                <strong>hub-config</strong>
+                <code>reviewed YAML</code>
               </div>
 
               <div className={styles.stageConnector} aria-hidden="true">
@@ -78,7 +79,7 @@ function HomepageHeader() {
               </div>
 
               <div className={clsx(styles.stageCard, styles.gateStage)}>
-                <span className={styles.cardLabel}>Gates</span>
+                <span className={styles.cardLabel}>Controls</span>
                 <div className={styles.gatePills}>
                   {gates.map((gate, index) => (
                     <span className={styles.gatePill} key={gate} style={{animationDelay: `${index * 0.35}s`}}>
@@ -95,7 +96,7 @@ function HomepageHeader() {
               <div className={clsx(styles.stageCard, styles.hubStage)}>
                 <KubernetesMark />
                 <strong>Kapro Hub</strong>
-                <span>decision loop</span>
+                <span>PromotionRun FSM</span>
               </div>
             </div>
 

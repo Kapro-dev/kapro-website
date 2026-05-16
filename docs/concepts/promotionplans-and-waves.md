@@ -2,23 +2,55 @@
 sidebar_position: 3
 ---
 
-# Pipelines and Waves
+import ConceptDiagram from '@site/src/components/ConceptDiagram';
 
-A pipeline is a release plan. A wave is a stage inside that plan.
+# PromotionPlans and Waves
 
-Kapro uses pipelines to answer:
+<ConceptDiagram id="promotionplans-and-waves" />
+
+A PromotionPlan is a PromotionRun plan. A wave is a stage inside that plan.
+
+<div class="kapro-lesson">
+  <img src="/img/logo.png" alt="Kapro mascot" />
+  <div>
+    <strong>A PromotionPlan is the route map.</strong>
+    <p>It does not carry a version by itself. It tells Kapro which clusters are first, which clusters wait, which gates must pass, and how many targets may move at once.</p>
+  </div>
+</div>
+
+Kapro uses PromotionPlans to answer:
 
 ```text
 Which clusters should receive this version first, next, and last?
 ```
 
-## The Smallest Pipeline
+## How It Connects
 
-A one-stage pipeline selects every production cluster and promotes them:
+<div class="kapro-map">
+  <div class="kapro-map-row">
+    <div class="kapro-map-item"><strong>FleetCluster labels</strong><span>Cluster facts: canary, prod, region, team.</span></div>
+    <div class="kapro-arrow">-></div>
+    <div class="kapro-map-item"><strong>PromotionPlan stages</strong><span>Selectors turn labels into waves.</span></div>
+    <div class="kapro-arrow">-></div>
+    <div class="kapro-map-item"><strong>Gates</strong><span>Policy, health, metrics, soak, approval.</span></div>
+    <div class="kapro-arrow">-></div>
+    <div class="kapro-map-item"><strong>PromotionTargets</strong><span>Kapro creates one target per selected cluster.</span></div>
+  </div>
+</div>
+
+<div class="kapro-impact">
+  <div class="kapro-impact-item"><strong>Controls order</strong><span>`dependsOn` decides when later stages can start.</span></div>
+  <div class="kapro-impact-item"><strong>Controls blast radius</strong><span>`maxParallel` limits how many clusters move together.</span></div>
+  <div class="kapro-impact-item"><strong>Controls trust</strong><span>Gate config decides what must be checked before apply.</span></div>
+</div>
+
+## The Smallest PromotionPlan
+
+A one-stage PromotionPlan selects every production cluster and promotes them:
 
 ```yaml
 apiVersion: kapro.io/v1alpha1
-kind: Pipeline
+kind: PromotionPlan
 metadata:
   name: checkout-production
 spec:
@@ -31,7 +63,7 @@ spec:
 
 That is useful for demos, but most real fleets need waves.
 
-## A Three-Wave Pipeline
+## A Three-Wave PromotionPlan
 
 <div class="kapro-diagram">
   <div class="kapro-lanes">
@@ -60,7 +92,7 @@ YAML:
 
 ```yaml
 apiVersion: kapro.io/v1alpha1
-kind: Pipeline
+kind: PromotionPlan
 metadata:
   name: checkout-progressive
 spec:
@@ -154,7 +186,7 @@ strategy:
 
 Use small values for risky stages and larger values for low-risk or edge waves.
 
-## Common Pipeline Shapes
+## Common PromotionPlan Shapes
 
 | Shape | Use it for |
 |---|---|
@@ -164,11 +196,11 @@ Use small values for risky stages and larger values for low-risk or edge waves.
 | `pilot stores -> region -> all stores` | Edge or retail fleets. |
 | `shadow -> canary -> production` | AI or data-plane changes where observation comes first. |
 
-## Debugging a Pipeline
+## Debugging a PromotionPlan
 
-When a pipeline does not progress, check:
+When a PromotionPlan does not progress, check:
 
-1. Did the stage selector match any `MemberCluster` objects?
+1. Did the stage selector match any `FleetCluster` objects?
 2. Is the dependency stage complete?
 3. Is `requiredSoakTime` still running?
 4. Is `maxParallel` already full?
@@ -177,7 +209,7 @@ When a pipeline does not progress, check:
 Useful commands:
 
 ```bash
-kubectl get memberclusters --show-labels
-kubectl describe pipeline checkout-progressive
-kubectl get releasetargets -l kapro.io/release=checkout-v1-8-2 -o wide
+kubectl get fleetclusters --show-labels
+kubectl describe PromotionPlan checkout-progressive
+kubectl get promotiontargets -l kapro.io/promotionrun=checkout-v1-8-2 -o wide
 ```

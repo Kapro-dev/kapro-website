@@ -2,7 +2,11 @@
 sidebar_position: 6
 ---
 
+import ConceptDiagram from '@site/src/components/ConceptDiagram';
+
 # Retail Fleet Example
+
+<ConceptDiagram id="retail-fleet" />
 
 Source repository:
 
@@ -19,6 +23,11 @@ pilot stores -> Germany stores -> global stores
 Retail fleets often have many clusters, different country risk profiles, and
 shared infrastructure components. Kapro lets the platform team encode those
 rules once as labels, stages, gates, and concurrency limits.
+
+The example keeps the existing Argo CD ApplicationSet files as the delivery
+source of truth. Kapro adds a `BackendProfile` for Argo and a `PromotionSource`
+that maps store-facing units, such as `pos-server`, to reviewed Git generator
+fields.
 
 ## Flow
 
@@ -48,8 +57,9 @@ rules once as labels, stages, gates, and concurrency limits.
 ## What It Demonstrates
 
 - label-based cluster selection
+- Argo CD brownfield adoption with backend-native files left in place
+- `PromotionSource` units for store application components
 - manual approval for a country wave
-- shared components in a `KaproBundle`
+- shared release artifacts across store clusters
 - component-level ordering with waves and dependencies
 - fleet rollout speed control with `maxParallel`
-

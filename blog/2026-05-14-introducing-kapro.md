@@ -2,7 +2,7 @@
 slug: introducing-kapro
 title: Kapro in Five Minutes
 authors: [kapro]
-tags: [release, announcement]
+tags: [promotionrun, announcement]
 ---
 
 # Kapro in Five Minutes
@@ -39,20 +39,20 @@ Kapro turns promotion into Kubernetes objects.
 <div class="kapro-diagram">
   <div class="kapro-flow">
     <div class="kapro-node">
-      <strong>MemberCluster</strong>
+      <strong>FleetCluster</strong>
       <span>A cluster in the fleet.</span>
     </div>
     <div class="kapro-node">
-      <strong>Pipeline</strong>
+      <strong>PromotionPlan</strong>
       <span>A reusable wave plan.</span>
     </div>
     <div class="kapro-node">
-      <strong>Release</strong>
+      <strong>PromotionRun</strong>
       <span>Promote one version.</span>
     </div>
     <div class="kapro-node">
-      <strong>ReleaseTarget</strong>
-      <span>One selected cluster moving through the release.</span>
+      <strong>PromotionTarget</strong>
+      <span>One selected cluster moving through the promotionrun.</span>
     </div>
   </div>
 </div>
@@ -61,15 +61,15 @@ If you know Kubernetes, this is the key analogy:
 
 | Kubernetes | Kapro |
 |---|---|
-| Node | MemberCluster |
-| Deployment | Pipeline |
-| Pod | ReleaseTarget |
-| Job | Release |
+| Node | FleetCluster |
+| Deployment | PromotionPlan |
+| Pod | PromotionTarget |
+| Job | PromotionRun |
 
-Kubernetes schedules Pods onto Nodes. Kapro schedules release targets onto
+Kubernetes schedules Pods onto Nodes. Kapro schedules promotion targets onto
 clusters.
 
-## What Happens During a Release
+## What Happens During a PromotionRun
 
 <div class="kapro-diagram">
   <div class="kapro-lanes">
@@ -133,6 +133,6 @@ Kapro makes those rules explicit in Kubernetes APIs.
 
 - [What is Kapro?](/docs/intro)
 - [Architecture](/docs/concepts/architecture)
-- [Promotion lifecycle](/docs/concepts/release-fsm)
+- [Promotion lifecycle](/docs/concepts/promotionrun-fsm)
 - [Hub configuration](/docs/guides/hub-config)
 - [Run the local Kind demo](/docs/getting-started/kind-demo)

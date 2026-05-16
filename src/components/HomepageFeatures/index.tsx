@@ -10,29 +10,32 @@ type FeatureItem = {
 
 const FeatureList: FeatureItem[] = [
   {
-    title: 'Start with a version',
+    title: 'Keep fleet intent in Git',
     description: (
       <>
-        CI publishes an immutable image or OCI bundle. Kapro treats that version
-        as the contract and promotes the same version through the fleet.
+        Review FleetClusters, BackendProfiles, PromotionSources, PromotionPlans,
+        policies, and PromotionRuns in a hub config repository, then apply them to
+        the Kapro hub in dependency order.
       </>
     ),
   },
   {
-    title: 'Move through waves',
+    title: 'Promote units across backends',
     description: (
       <>
-        Select canary, regional, and production clusters with labels. Stages,
-        dependencies, and concurrency decide what can start next.
+        PromotionUnits map each deployable unit to an Argo CD, Flux, Helm, or
+        Git-native version field so Kapro can move the right value at the right
+        time.
       </>
     ),
   },
   {
-    title: 'Keep the audit trail',
+    title: 'Extend at narrow boundaries',
     description: (
       <>
-        Each target records phase, gate evidence, approvals, backend convergence,
-        events, and final outcome in Kubernetes status.
+        Backend adapter, gate, and planner plugins use KAI, KGI, and KPI
+        contracts while Kapro keeps PromotionRun state, ordering, retries, and audit
+        status.
       </>
     ),
   },
@@ -56,11 +59,11 @@ export default function HomepageFeatures(): ReactNode {
       <div className="container">
         <div className={styles.sectionHeader}>
           <Heading as="h2">
-            <span>Learn Kapro in three ideas</span>
+            <span>The current Kapro architecture</span>
           </Heading>
           <p>
-            Kapro is easiest to understand as version, waves, and evidence.
-            Existing delivery tools still handle the local rollout.
+            Kapro separates reviewed fleet configuration from immutable runtime
+            artifacts, then coordinates the promotion state machine across clusters.
           </p>
         </div>
         <div className="row">

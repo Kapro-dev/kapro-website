@@ -2,7 +2,11 @@
 sidebar_position: 1
 ---
 
+import ConceptDiagram from '@site/src/components/ConceptDiagram';
+
 # API Stability
+
+<ConceptDiagram id="api-stability" />
 
 Kapro uses explicit API maturity levels for CRDs, Go extension packages, lifecycle events, and plugin contracts.
 
@@ -18,11 +22,11 @@ Kapro uses explicit API maturity levels for CRDs, Go extension packages, lifecyc
 
 | Surface | Level |
 |---|---|
-| Core promotion CRDs (KaproBundle, Pipeline, Release, ReleaseTarget, MemberCluster, Approval, AgentPolicy) | Alpha |
-| ReleaseTrigger CRD | Preview |
+| Core promotion CRDs (Kapro, BackendProfile, PromotionSource, PromotionPlan, PromotionRun, PromotionTarget, FleetCluster, Approval, AgentPolicy) | Alpha |
+| PromotionTrigger CRD | Preview |
 | PluginRegistration CRD | Preview |
 | Notification provider/policy CRDs | Preview |
-| In-process actuator interface (pkg/actuator) | Preview |
+| In-process backend adapter interface (pkg/actuator) | Preview |
 | In-process gate interface (pkg/gate) | Preview |
 | In-process planner interface (pkg/planner) | Preview |
 | KAI/KGI/KPI plugin contracts | Preview |

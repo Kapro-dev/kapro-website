@@ -2,13 +2,18 @@
 sidebar_position: 2
 ---
 
+import ConceptDiagram from '@site/src/components/ConceptDiagram';
+
 # Local Kind Demo
+
+<ConceptDiagram id="kind-demo" />
 
 The Kind demo is the fastest way to see the Kapro model without production
 credentials.
 
-It creates a local hub, installs Kapro, creates a small fake fleet, starts a
-release, pauses production for approval, and shows the resulting status.
+It creates a local hub, installs Kapro, creates a small fake fleet, applies the
+demo hub config, exercises the PromotionRun trigger path, pauses production for
+approval, and shows the resulting status.
 
 ## What You Will See
 
@@ -60,7 +65,8 @@ The script:
 4. installs Kapro CRDs
 5. deploys the operator
 6. applies local Flux fixture CRDs and resources
-7. creates the `checkout-kind` release
+7. applies demo `FleetCluster`, plugin, PromotionPlan, trigger, and PromotionRun objects
+8. creates the `checkout-kind` PromotionRun flow
 
 ## Approve Production
 
@@ -80,9 +86,9 @@ canary passes -> production waits -> approval arrives -> production applies
 ## Inspect the Objects
 
 ```bash
-kubectl --context kind-kapro-kind-demo get releases,releasetargets,memberclusters
-kubectl --context kind-kapro-kind-demo get release checkout-kind -o yaml
-kubectl --context kind-kapro-kind-demo get releasetargets -o yaml
+kubectl --context kind-kapro-kind-demo get PromotionRuns,promotiontargets,fleetclusters
+kubectl --context kind-kapro-kind-demo get PromotionRun checkout-kind -o yaml
+kubectl --context kind-kapro-kind-demo get promotiontargets -o yaml
 ```
 
 Look for:
@@ -90,6 +96,8 @@ Look for:
 - target phase
 - gate evidence
 - approval state
+- planner decisions
+- PromotionRun trigger status
 - selected version
 - backend convergence state
 
@@ -108,6 +116,7 @@ scripts/kind-demo.sh up
 
 ## What To Read Next
 
-- [Promotion lifecycle](/docs/concepts/release-fsm)
+- [Promotion lifecycle](/docs/concepts/promotionrun-fsm)
 - [Gates](/docs/concepts/gates)
+- [Automation and triggers](/docs/concepts/automation-and-triggers)
 - [Hub configuration](/docs/guides/hub-config)

@@ -1,13 +1,27 @@
 ---
 sidebar_position: 3
+sidebar_label: Backend Adapters
 ---
 
-# Actuators
+import ConceptDiagram from '@site/src/components/ConceptDiagram';
 
-An actuator connects Kapro to the tool that applies a version inside a cluster.
+# Backend Adapters
 
-Kapro decides **when** a target may receive a version. The actuator translates
-that decision into backend-specific work.
+<ConceptDiagram id="actuators" />
+
+A backend adapter connects Kapro to the tool that applies a selected version.
+
+<div class="kapro-lesson">
+  <img src="/img/logo.png" alt="Kapro mascot" />
+  <div>
+    <strong>A backend adapter is the translator.</strong>
+    <p>Kapro speaks in promotion decisions. Argo, Flux, and internal platforms speak their own APIs and files. The adapter translates one selected target into the backend's language.</p>
+  </div>
+</div>
+
+Kapro decides **when** a target may receive a version. The adapter translates
+that decision into backend-specific work for Argo CD, Flux, or an external
+backend.
 
 ## The Boundary
 
@@ -18,8 +32,8 @@ that decision into backend-specific work.
       <span>prod-eu may receive checkout:v1.8.2.</span>
     </div>
     <div class="kapro-node">
-      <strong>Actuator</strong>
-      <span>Patch the backend object or call the backend API.</span>
+      <strong>Backend adapter</strong>
+      <span>Patch the declared Git field or call the backend API.</span>
     </div>
     <div class="kapro-node">
       <strong>Backend</strong>
@@ -32,7 +46,7 @@ that decision into backend-specific work.
   </div>
 </div>
 
-The actuator does not own release ordering. It does not decide whether the next
+The adapter does not own PromotionRun ordering. It does not decide whether the next
 cluster should start. It only applies one selected version to one selected
 target.
 
@@ -46,21 +60,23 @@ Different platform teams use different delivery backends:
 - Flux Operator `ResourceSet`
 - internal deployment systems
 
-Kapro should not become a copy of every delivery backend. The actuator boundary
+Kapro should not become a copy of every delivery backend. The adapter boundary
 keeps Kapro focused on fleet promotion while still integrating with those
 systems.
 
 ## Built-In Shape
 
-Each `MemberCluster` declares how Kapro should deliver to it:
+Each `Kapro` workload or PromotionRun path declares delivery through
+`spec.delivery`, and each backend is described by a `BackendProfile`:
 
 | Field | Meaning |
 |---|---|
 | `mode` | Who initiates delivery, for example `push` or `pull`. |
-| `backend` | Which system applies the change, for example `flux`. |
-| backend config | The specific object, namespace, field, or parameter to patch. |
+| `backendRef` | The `BackendProfile` to use, such as `argo`, `flux`, or an external profile. |
+| `parameters` | Backend-specific values that stay opaque to the shared API. |
 
-The reference backend is Flux-oriented.
+`PromotionSource` and `PromotionUnit` objects then describe the specific
+backend-native files, objects, and version fields Kapro may update.
 
 ## Push and Pull
 
@@ -82,9 +98,9 @@ Kapro supports two delivery shapes:
 Both modes keep the same Kapro model: one target, one selected version, one
 convergence result.
 
-## Plugin Actuators
+## Plugin Adapters
 
-External actuators use the Kapro Actuator Interface, or KAI.
+External backend adapters use the Kapro Actuator Interface, or KAI.
 
 The contract stays intentionally small:
 
@@ -95,4 +111,9 @@ Rollback(previousVersion, target)
 ```
 
 That makes plugins easy to reason about. A plugin can integrate a backend, but
-it cannot take over Kapro release state.
+it cannot take over Kapro PromotionRun state.
+
+Platform teams register external adapters with `PluginRegistration` and should
+run the KAI conformance harness before enabling a plugin image in production.
+When the plugin gateway is enabled, ready adapter registrations can be loaded
+at operator startup.

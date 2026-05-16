@@ -2,7 +2,11 @@
 sidebar_position: 4
 ---
 
+import ConceptDiagram from '@site/src/components/ConceptDiagram';
+
 # Approval and Gate Example
+
+<ConceptDiagram id="approval-gates" />
 
 This example shows how Kapro pauses a target until automated evidence and human
 approval are both present.
@@ -21,15 +25,15 @@ Canary should move automatically. Production should wait.
     <div class="kapro-node"><strong>Canary</strong><span>Health and metrics pass automatically.</span></div>
     <div class="kapro-node"><strong>Soak</strong><span>Wait 30 minutes after canary.</span></div>
     <div class="kapro-node"><strong>Approval</strong><span>SRE approves production.</span></div>
-    <div class="kapro-node"><strong>Production</strong><span>Actuator applies the version.</span></div>
+    <div class="kapro-node"><strong>Production</strong><span>Backend applies the selected version.</span></div>
   </div>
 </div>
 
-## Pipeline Snippet
+## PromotionPlan Snippet
 
 ```yaml
 apiVersion: kapro.io/v1alpha1
-kind: Pipeline
+kind: PromotionPlan
 metadata:
   name: checkout-approval
 spec:
@@ -82,12 +86,12 @@ prod-us         -> Applying -> Converged
 
 Approval is not a hidden click in a web UI. It is Kubernetes state.
 
-That means the release history can show:
+That means the PromotionRun history can show:
 
 - which target required approval
 - who or what approved it
 - when the approval arrived
-- whether the release advanced or stopped afterward
+- whether the PromotionRun advanced or stopped afterward
 
 ## Gate Evidence
 
@@ -101,13 +105,13 @@ Kapro stores gate evidence with the target. A production target might have:
 | Soak | start time and required duration |
 | Approval | approval object and decision |
 
-This is what makes the release explainable.
+This is what makes the PromotionRun explainable.
 
 ## Failure Policy
 
 When a gate fails, a stage policy can decide whether to:
 
-- fail the release
+- fail the PromotionRun
 - retry later
 - continue with evidence
 - roll back

@@ -2,7 +2,11 @@
 sidebar_position: 3
 ---
 
+import ConceptDiagram from '@site/src/components/ConceptDiagram';
+
 # Progressive Rollout Example
+
+<ConceptDiagram id="progressive-rollout" />
 
 This example builds a rollout from zero to a full fleet.
 
@@ -22,7 +26,7 @@ Use labels to describe each cluster.
 
 ```yaml
 apiVersion: kapro.io/v1alpha1
-kind: MemberCluster
+kind: FleetCluster
 metadata:
   name: canary-eu
   labels:
@@ -30,7 +34,7 @@ metadata:
     kapro.io/region: europe-west3
 ---
 apiVersion: kapro.io/v1alpha1
-kind: MemberCluster
+kind: FleetCluster
 metadata:
   name: prod-eu
   labels:
@@ -38,7 +42,7 @@ metadata:
     kapro.io/region: europe-west3
 ---
 apiVersion: kapro.io/v1alpha1
-kind: MemberCluster
+kind: FleetCluster
 metadata:
   name: prod-us
   labels:
@@ -71,11 +75,47 @@ metadata:
   </div>
 </div>
 
-## Step 3: Encode the Pipeline
+## Step 3: Declare the Backend and Source
+
+The example uses Argo CD as the backend. Kapro observes the Argo objects and
+promotes only the fields listed in `PromotionSource`.
 
 ```yaml
 apiVersion: kapro.io/v1alpha1
-kind: Pipeline
+kind: BackendProfile
+metadata:
+  name: argo
+spec:
+  driver: argo
+  runtime: Hub
+  discovery:
+    enabled: true
+    managementPolicy: Observe
+---
+apiVersion: kapro.io/v1alpha1
+kind: PromotionSource
+metadata:
+  name: checkout
+spec:
+  backendRef: argo
+  units:
+    - name: api
+      backendKind: ArgoApplicationSource
+      namespace: argocd
+      sourcePath: argocd/applications/api.yaml
+      versionField: spec.source.targetRevision
+    - name: web
+      backendKind: ArgoApplicationSetGitGenerator
+      namespace: argocd
+      sourcePath: argocd/applicationsets/checkout.yaml
+      versionField: argocd/environments/*.json:webVersion
+```
+
+## Step 4: Encode the PromotionPlan
+
+```yaml
+apiVersion: kapro.io/v1alpha1
+kind: PromotionPlan
 metadata:
   name: checkout-three-wave
 spec:
@@ -107,7 +147,7 @@ spec:
           strategy: all
 ```
 
-## Step 4: Add a Gate
+## Step 5: Add a Gate
 
 Production can require approval:
 
@@ -133,29 +173,34 @@ gate:
         interval: 60s
 ```
 
-Use the exact metric fields supported by your Kapro release. The important
+Use the exact metric fields supported by your Kapro PromotionRun. The important
 model is that the gate returns evidence and Kapro records it.
 
-## Step 5: Create the Release
+## Step 6: Create the PromotionRun
 
 ```yaml
 apiVersion: kapro.io/v1alpha1
-kind: Release
+kind: PromotionRun
 metadata:
   name: checkout-v1-8-2
 spec:
-  version: "oci://registry.example.com/bundles/checkout@sha256:a1b2..."
-  pipelines:
+  versions:
+    api: "v1.8.2"
+    web: "main-20260515"
+  promotionplans:
     - name: main
-      pipeline: checkout-three-wave
+      promotionplan: checkout-three-wave
   suspended: false
   timeout: 4h
 ```
 
-## Step 6: Watch It Move
+Each key in `spec.versions` matches a `PromotionUnit` in the `checkout`
+`PromotionSource`.
+
+## Step 7: Watch It Move
 
 ```bash
-kubectl get releasetargets -l kapro.io/release=checkout-v1-8-2 -o wide
+kubectl get promotiontargets -l kapro.io/promotionrun=checkout-v1-8-2 -o wide
 ```
 
 Expected timeline:
@@ -166,4 +211,4 @@ Expected timeline:
 | Canary converged | Europe stage becomes eligible after soak. |
 | Europe approved | Europe target applies and converges. |
 | Europe soaked | Global targets begin, limited by `maxParallel`. |
-| End | Release is completed or failed with evidence. |
+| End | PromotionRun is completed or failed with evidence. |

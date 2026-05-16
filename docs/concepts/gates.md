@@ -2,9 +2,21 @@
 sidebar_position: 4
 ---
 
+import ConceptDiagram from '@site/src/components/ConceptDiagram';
+
 # Gates
 
+<ConceptDiagram id="gates" />
+
 A gate is a safety check for one target.
+
+<div class="kapro-lesson">
+  <img src="/img/logo.png" alt="Kapro mascot" />
+  <div>
+    <strong>A gate is a checkpoint on the path.</strong>
+    <p>Kapro asks "may this target continue now?" A gate answers with a decision and evidence, so operators can see why a cluster moved or why it stopped.</p>
+  </div>
+</div>
 
 It answers:
 
@@ -12,29 +24,20 @@ It answers:
 May this cluster continue now?
 ```
 
-Gates do not run the rollout. The `ReleaseReconciler` runs the lifecycle.
+Gates do not run the rollout. The `PromotionRunReconciler` runs the lifecycle.
 Gates only return a decision with evidence.
 
 ## The Gate Model
 
-<div class="kapro-diagram">
-  <div class="kapro-flow">
-    <div class="kapro-node">
-      <strong>Evidence</strong>
-      <span>Metric value, signature result, approval state, soak timer, webhook answer.</span>
-    </div>
-    <div class="kapro-node">
-      <strong>Analysis</strong>
-      <span>Kapro compares evidence with the configured rule.</span>
-    </div>
-    <div class="kapro-node">
-      <strong>Phase</strong>
-      <span>The gate returns passed, failed, running, or inconclusive.</span>
-    </div>
-    <div class="kapro-node">
-      <strong>Policy</strong>
-      <span>The release either advances, waits, retries, fails, continues, or rolls back.</span>
-    </div>
+<div class="kapro-sequence">
+  <div class="kapro-sequence-row">
+    <div class="kapro-step"><strong>Evidence</strong><span>Metric value, signature result, approval state, soak timer, webhook answer.</span></div>
+    <div class="kapro-arrow">-></div>
+    <div class="kapro-step"><strong>Analysis</strong><span>Kapro compares evidence with the configured rule.</span></div>
+    <div class="kapro-arrow">-></div>
+    <div class="kapro-step"><strong>Gate result</strong><span>Passed, failed, running, or inconclusive.</span></div>
+    <div class="kapro-arrow">-></div>
+    <div class="kapro-step"><strong>Target phase</strong><span>The PromotionTarget advances, waits, fails, or rolls back.</span></div>
   </div>
 </div>
 
@@ -45,7 +48,7 @@ The phase controls rollout. Evidence explains the decision.
 | Gate | Use it when | Example |
 |---|---|---|
 | Verification | You only want trusted artifacts to move. | Cosign signature or provenance check. |
-| Health | You do not want to deploy into a broken cluster. | MemberCluster heartbeat is fresh and workloads are ready. |
+| Health | You do not want to deploy into a broken cluster. | FleetCluster heartbeat is fresh and workloads are ready. |
 | Metrics | You want telemetry to block bad versions. | Error rate below threshold, SLO burn rate safe. |
 | Soak | You want time between waves. | Wait 30 minutes after canary before production. |
 | Approval | You need a human decision. | SRE approves production or regulated regions. |

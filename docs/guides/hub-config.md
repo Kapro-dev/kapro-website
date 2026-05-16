@@ -2,12 +2,16 @@
 sidebar_position: 1
 ---
 
+import ConceptDiagram from '@site/src/components/ConceptDiagram';
+
 # Hub Configuration
+
+<ConceptDiagram id="hub-config" />
 
 The hub cluster stores Kapro objects. A hub config repository is the recommended
 way to manage those objects.
 
-Use Git for the desired promotion configuration. Use the OCI registry for the
+Use Git for desired promotion configuration. Use the OCI registry for immutable
 runtime artifact versions.
 
 ## Two Sources of Truth
@@ -16,17 +20,26 @@ runtime artifact versions.
   <div class="kapro-split">
     <div class="kapro-card">
       <strong>Hub config Git repo</strong>
-      <span>Fleet inventory, bundles, pipelines, and releases.</span>
+      <span>Fleet inventory, backend profiles, promotion sources, PromotionPlans, triggers, plugins, notifications, policies, and PromotionRuns.</span>
     </div>
     <div class="kapro-card">
       <strong>OCI registry</strong>
-      <span>Immutable images or bundles that clusters can run.</span>
+      <span>Immutable images, charts, or release artifacts that clusters can run.</span>
     </div>
   </div>
 </div>
 
 Spoke clusters do not need to watch the hub config repo. They consume selected
 artifact versions and report status through Kapro.
+
+The default path is CI-driven:
+
+```text
+pull request -> validate -> merge -> kubectl apply -> Kapro hub
+```
+
+If your platform already runs Flux on the hub, Flux can replace the merge-time
+`kubectl apply` step. The source-of-truth split stays the same.
 
 ## Repository Layout
 
@@ -38,11 +51,23 @@ hub-config/
     canary-eu.yaml
     prod-eu.yaml
     prod-us.yaml
-  bundles/
+  backends/
+    argo-observe.yaml
+  sources/
     checkout.yaml
-  pipelines/
+  promotionplans/
     checkout-progressive.yaml
-  releases/
+  triggers/
+    checkout-oci.yaml
+  plugins/
+    slo-gate.yaml
+    argocd-adapter.yaml
+  notifications/
+    PromotionRun-webhook.yaml
+    production-failures.yaml
+  policies/
+    sre-agent-policy.yaml
+  promotionruns/
     checkout-v1.8.2.yaml
   .github/
     workflows/
@@ -51,10 +76,15 @@ hub-config/
 
 | Directory | What lives there |
 |---|---|
-| `clusters/` | `MemberCluster` objects. One file per cluster is easiest to review. |
-| `bundles/` | `KaproBundle` objects. Component registries, versions, defaults, and overrides. |
-| `pipelines/` | `Pipeline` objects. Stage order, selectors, gates, and concurrency. |
-| `releases/` | `Release` objects. The intent to promote a version. |
+| `clusters/` | `FleetCluster` objects. One file per cluster is easiest to review. |
+| `backends/` | `BackendProfile` objects. Built-in Argo/Flux profiles or external plugin-backed profiles. |
+| `sources/` | `PromotionSource` objects. Promotion units and backend-native write fields. |
+| `promotionplans/` | `PromotionPlan` objects. Stage order, selectors, gates, and concurrency. |
+| `triggers/` | `PromotionTrigger` objects. OCI observation, signature requirement, cooldown, max-active, and PromotionRun template. |
+| `plugins/` | `PluginRegistration` objects. External backend adapter, gate, and planner endpoint declarations. |
+| `notifications/` | `NotificationProvider` and `NotificationPolicy` objects. Event destinations and subscriptions. |
+| `policies/` | `AgentPolicy` and future policy objects. Guardrails around assisted workflows. |
+| `promotionruns/` | `PromotionRun` objects. The intent to promote a version. |
 
 ## Apply Order
 
@@ -63,19 +93,70 @@ Apply objects in dependency order:
 <div class="kapro-diagram">
   <div class="kapro-flow">
     <div class="kapro-node"><strong>1. Clusters</strong><span>Register targets and labels.</span></div>
-    <div class="kapro-node"><strong>2. Bundles</strong><span>Define components and chart sources.</span></div>
-    <div class="kapro-node"><strong>3. Pipelines</strong><span>Define the rollout plan.</span></div>
-    <div class="kapro-node"><strong>4. Releases</strong><span>Start promotion only after the inputs exist.</span></div>
+    <div class="kapro-node"><strong>2. Backends</strong><span>Observe or adopt Argo, Flux, or external backends.</span></div>
+    <div class="kapro-node"><strong>3. Sources</strong><span>Define promotion units and version fields.</span></div>
+    <div class="kapro-node"><strong>4. Integrations</strong><span>Register plugins, notifications, and policies.</span></div>
+    <div class="kapro-node"><strong>5. PromotionPlans</strong><span>Define the rollout plan.</span></div>
+    <div class="kapro-node"><strong>6. Triggers</strong><span>Enable guarded artifact observation.</span></div>
+    <div class="kapro-node"><strong>7. PromotionRuns</strong><span>Start promotion only after the inputs exist.</span></div>
   </div>
 </div>
 
-This prevents a release from starting before its clusters or pipeline exist.
+This prevents a PromotionRun from starting before its clusters or PromotionPlan exist.
 
-## Example Pipeline
+Recommended dependency order:
+
+1. `clusters/`
+2. `backends/`
+3. `sources/`
+4. `plugins/`
+5. `notifications/`
+6. `policies/`
+7. `promotionplans/`
+8. `triggers/`
+9. `promotionruns/`
+
+## Example Backend And Source
 
 ```yaml
 apiVersion: kapro.io/v1alpha1
-kind: Pipeline
+kind: BackendProfile
+metadata:
+  name: argo
+spec:
+  driver: argo
+  runtime: Hub
+  parameters:
+    namespace: argocd
+  discovery:
+    enabled: true
+    managementPolicy: Observe
+    selector:
+      matchLabels:
+        kapro.io/import: "true"
+---
+apiVersion: kapro.io/v1alpha1
+kind: PromotionSource
+metadata:
+  name: checkout
+spec:
+  backendRef: argo
+  units:
+    - name: api
+      backendKind: ArgoApplicationSource
+      namespace: argocd
+      sourcePath: argocd/applications/api.yaml
+      versionField: spec.source.targetRevision
+```
+
+Read that as: observe Argo objects first, then promote the `api` unit only
+through the reviewed Application revision field.
+
+## Example PromotionPlan
+
+```yaml
+apiVersion: kapro.io/v1alpha1
+kind: PromotionPlan
 metadata:
   name: checkout-progressive
 spec:
@@ -106,32 +187,77 @@ Read that as:
 2. Wait for canary and 30 minutes of soak.
 3. Promote European production clusters after approval from `sre-team`.
 
+## Example Trigger
+
+```yaml
+apiVersion: kapro.io/v1alpha1
+kind: PromotionTrigger
+metadata:
+  name: checkout-oci
+spec:
+  suspended: true
+  source:
+    type: oci
+    oci:
+      repository: oci://registry.example.com/platform/checkout
+      tagPattern: "^v[0-9]+\\.[0-9]+\\.[0-9]+$"
+      requireSignature: true
+      pollInterval: 5m
+  promotionrunTemplate:
+    promotionplans:
+      - name: production
+        promotionplan: checkout-progressive
+    suspended: true
+    scope:
+      targets:
+        - checkout-canary-eu
+  cooldown: 30m
+  maxActive: 1
+  dryRun: true
+```
+
+Read that as: observe only semver tags, require signature verification, create a
+digest-pinned PromotionRun from the template, keep the PromotionRun suspended by default,
+and start in dry-run mode while the trigger is being validated.
+
 ## CI Checks
 
 On pull requests, validate with server-side dry run:
 
 ```bash
 kubectl apply --dry-run=server -f clusters/
-kubectl apply --dry-run=server -f bundles/
-kubectl apply --dry-run=server -f pipelines/
-kubectl apply --dry-run=server -f releases/
+kubectl apply --dry-run=server -f backends/
+kubectl apply --dry-run=server -f sources/
+kubectl apply --dry-run=server -f plugins/
+kubectl apply --dry-run=server -f notifications/
+kubectl apply --dry-run=server -f policies/
+kubectl apply --dry-run=server -f promotionplans/
+kubectl apply --dry-run=server -f triggers/
+kubectl apply --dry-run=server -f promotionruns/
 ```
 
 After merge, apply in the same order:
 
 ```bash
 kubectl apply -f clusters/
-kubectl apply -f bundles/
-kubectl apply -f pipelines/
-kubectl apply -f releases/
+kubectl apply -f backends/
+kubectl apply -f sources/
+kubectl apply -f plugins/
+kubectl apply -f notifications/
+kubectl apply -f policies/
+kubectl apply -f promotionplans/
+kubectl apply -f triggers/
+kubectl apply -f promotionruns/
 ```
 
 Then inspect:
 
 ```bash
-kubectl get memberclusters.kapro.io
-kubectl get kaprobundles.kapro.io,pipelines.kapro.io,releases.kapro.io
-kubectl describe release checkout-v1-8-2
+kubectl get fleetclusters.kapro.io
+kubectl get backendprofiles.kapro.io,promotionsources.kapro.io
+kubectl get PromotionPlans.kapro.io,promotiontriggers.kapro.io,PromotionRuns.kapro.io
+kubectl get pluginregistrations.kapro.io,notificationproviders.kapro.io,notificationpolicies.kapro.io
+kubectl describe PromotionRun checkout-v1-8-2
 ```
 
 ## Optional: Flux on the Hub

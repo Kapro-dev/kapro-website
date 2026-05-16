@@ -2,11 +2,15 @@
 sidebar_position: 2
 ---
 
+import ConceptDiagram from '@site/src/components/ConceptDiagram';
+
 # Events
+
+<ConceptDiagram id="events" />
 
 Kapro emits semantic lifecycle events through configured notifications. These
 events are intended for audit systems, chat/incident bots, dashboards, SIEM
-pipelines, and custom platform controllers.
+PromotionPlans, and custom platform controllers.
 
 `Event.Type` is the stable integration contract. `Event.Phase` is the internal
 FSM state that caused the event.
@@ -19,10 +23,10 @@ gate:
   notifications:
     - type: webhook
       events:
-        - kapro.release.failed
-        - kapro.release.stage.completed
-        - kapro.release.gate.failed
-        - kapro.release.approval.required
+        - kapro.PromotionRun.failed
+        - kapro.PromotionRun.stage.completed
+        - kapro.PromotionRun.gate.failed
+        - kapro.PromotionRun.approval.required
       webhook:
         url: https://events.example.com/kapro
         format: cloudevents
@@ -35,23 +39,23 @@ Use `format: cloudevents` to receive CloudEvents v1.0 structured JSON.
 
 | Event type | Emitted when | Scope |
 |---|---|---|
-| `kapro.release.started` | A Release transitions from Pending to Progressing. | Release |
-| `kapro.release.completed` | All pipelines in a Release complete. | Release |
-| `kapro.release.failed` | A Release reaches Failed, including timeout. | Release |
-| `kapro.release.rollback.started` | A rollback target is created for a previously converged target. | Target |
-| `kapro.release.stage.completed` | A stage first reaches Complete. | Stage |
-| `kapro.release.gate.passed` | A verification, soak, metrics, or template gate passes. | Target |
-| `kapro.release.gate.failed` | A verification, metrics, or template gate fails. | Target |
-| `kapro.release.approval.required` | A target reaches WaitingApproval and approval links are sent. | Target |
-| `kapro.release.target.pending` | A target enters Pending. | Target |
-| `kapro.release.target.verification` | A target enters Verification. | Target |
-| `kapro.release.target.health_check` | A target enters HealthCheck. | Target |
-| `kapro.release.target.soaking` | A target enters Soaking. | Target |
-| `kapro.release.target.metrics_check` | A target enters MetricsCheck. | Target |
-| `kapro.release.target.applying` | A target enters Applying. | Target |
-| `kapro.release.target.converged` | A target reaches Converged. | Target |
-| `kapro.release.target.failed` | A target reaches Failed. | Target |
-| `kapro.release.target.skipped` | A target is skipped after `onFailure=continue`. | Target |
+| `kapro.PromotionRun.started` | A PromotionRun transitions from Pending to Progressing. | PromotionRun |
+| `kapro.PromotionRun.completed` | All PromotionPlans in a PromotionRun complete. | PromotionRun |
+| `kapro.PromotionRun.failed` | A PromotionRun reaches Failed, including timeout. | PromotionRun |
+| `kapro.PromotionRun.rollback.started` | A rollback target is created for a previously converged target. | Target |
+| `kapro.PromotionRun.stage.completed` | A stage first reaches Complete. | Stage |
+| `kapro.PromotionRun.gate.passed` | A verification, soak, metrics, or template gate passes. | Target |
+| `kapro.PromotionRun.gate.failed` | A verification, metrics, or template gate fails. | Target |
+| `kapro.PromotionRun.approval.required` | A target reaches WaitingApproval and approval links are sent. | Target |
+| `kapro.PromotionRun.target.pending` | A target enters Pending. | Target |
+| `kapro.PromotionRun.target.verification` | A target enters Verification. | Target |
+| `kapro.PromotionRun.target.health_check` | A target enters HealthCheck. | Target |
+| `kapro.PromotionRun.target.soaking` | A target enters Soaking. | Target |
+| `kapro.PromotionRun.target.metrics_check` | A target enters MetricsCheck. | Target |
+| `kapro.PromotionRun.target.applying` | A target enters Applying. | Target |
+| `kapro.PromotionRun.target.converged` | A target reaches Converged. | Target |
+| `kapro.PromotionRun.target.failed` | A target reaches Failed. | Target |
+| `kapro.PromotionRun.target.skipped` | A target is skipped after `onFailure=continue`. | Target |
 
 ## Plain JSON Payload
 
@@ -59,12 +63,12 @@ Plain webhook notifications send the `data` object directly:
 
 ```json
 {
-  "type": "kapro.release.target.converged",
+  "type": "kapro.PromotionRun.target.converged",
   "phase": "Converged",
   "version": "oci://registry.example.com/checkout@sha256:...",
   "target": "prod-eu",
-  "release": "checkout-v1-2-3",
-  "pipeline": "main",
+  "PromotionRun": "checkout-v1-2-3",
+  "PromotionPlan": "main",
   "stage": "production-eu",
   "message": "target converged"
 }
@@ -77,25 +81,25 @@ CloudEvents webhooks use structured content mode:
 ```json
 {
   "specversion": "1.0",
-  "type": "kapro.release.target.converged",
-  "source": "/kapro/releases/checkout-v1-2-3",
-  "id": "release/checkout-v1-2-3/type/kapro.release.target.converged/pipeline/main/stage/production-eu/target/prod-eu/phase/Converged",
+  "type": "kapro.PromotionRun.target.converged",
+  "source": "/kapro/promotionruns/checkout-v1-2-3",
+  "id": "PromotionRun/checkout-v1-2-3/type/kapro.PromotionRun.target.converged/PromotionPlan/main/stage/production-eu/target/prod-eu/phase/Converged",
   "time": "2026-05-14T10:23:00Z",
-  "subject": "pipeline/main/stage/production-eu/target/prod-eu",
+  "subject": "PromotionPlan/main/stage/production-eu/target/prod-eu",
   "data": {
-    "type": "kapro.release.target.converged",
+    "type": "kapro.PromotionRun.target.converged",
     "phase": "Converged",
     "version": "oci://registry.example.com/checkout@sha256:...",
     "target": "prod-eu",
-    "release": "checkout-v1-2-3",
-    "pipeline": "main",
+    "PromotionRun": "checkout-v1-2-3",
+    "PromotionPlan": "main",
     "stage": "production-eu",
     "message": "target converged"
   }
 }
 ```
 
-The CloudEvents `id` is stable for a given release, event type, pipeline, stage,
+The CloudEvents `id` is stable for a given PromotionRun, event type, PromotionPlan, stage,
 target, and phase. Consumers can use it for best-effort de-duplication.
 
 ## Integration Patterns
@@ -103,7 +107,7 @@ target, and phase. Consumers can use it for best-effort de-duplication.
 | Integration | Recommended pattern |
 |---|---|
 | Slack or Teams bot | Receive CloudEvents and render selected event types. |
-| Git audit log | Commit a compact YAML record on `kapro.release.completed`. |
+| Git audit log | Commit a compact YAML record on `kapro.PromotionRun.completed`. |
 | SIEM / audit sink | Ingest all CloudEvents and index by `source`, `subject`, and `type`. |
 | GitHub Actions | Use a small webhook receiver to trigger `repository_dispatch`. |
 | Knative Eventing | Point the webhook at a broker-compatible ingress adapter. |
