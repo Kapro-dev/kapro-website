@@ -27,9 +27,9 @@ config repository.
 <div class="kapro-map">
   <div class="kapro-map-row">
     <div class="kapro-map-item"><strong>Hub config Git</strong><span>Clusters, plans, sources, triggers, policies, plugins.</span></div>
-    <div class="kapro-arrow">+</div>
+    <div class="kapro-join">+</div>
     <div class="kapro-map-item"><strong>OCI registry</strong><span>Immutable images, charts, or artifacts.</span></div>
-    <div class="kapro-arrow">+</div>
+    <div class="kapro-join">+</div>
     <div class="kapro-map-item"><strong>Backend Git</strong><span>Argo and Flux native objects and version fields.</span></div>
     <div class="kapro-arrow">-></div>
     <div class="kapro-map-item"><strong>Hub status</strong><span>What Kapro is doing now and what happened.</span></div>

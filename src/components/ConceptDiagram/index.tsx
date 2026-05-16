@@ -489,20 +489,20 @@ const layoutById: Record<DiagramId, LayoutKind> = {
   'core-objects': 'hub',
   'artifact-contract': 'pipeline',
   notifications: 'fanout',
-  'backend-profiles': 'split',
+  'backend-profiles': 'pipeline',
   'promotion-targets': 'state',
   'promotionplans-and-waves': 'waves',
   architecture: 'stack',
   'promotion-units': 'hub',
   promotionruns: 'pipeline',
   'fleet-clusters': 'hub',
-  'greenfield-and-brownfield': 'split',
+  'greenfield-and-brownfield': 'pipeline',
   'backend-ownership': 'swimlane',
   approvals: 'state',
   'automation-and-triggers': 'pipeline',
   'plugin-registrations': 'hub',
-  'promotion-sources': 'repo',
-  'sources-of-truth': 'split',
+  'promotion-sources': 'pipeline',
+  'sources-of-truth': 'pipeline',
   'promotionrun-fsm': 'state',
   actuators: 'swimlane',
   gates: 'state',
@@ -680,8 +680,8 @@ function ArrowPath({
 function DiagramDefs({arrowId, colors}: {arrowId: string; colors: Palette}) {
   return (
     <defs>
-      <marker id={arrowId} markerHeight="8" markerWidth="8" orient="auto" refX="7" refY="4">
-        <path d="M 0 0 L 8 4 L 0 8 L 2 4 z" fill={colors.stroke} />
+      <marker id={arrowId} markerHeight="10" markerWidth="10" orient="auto" refX="8" refY="5">
+        <path d="M 0 0 L 10 5 L 0 10 L 2.4 5 z" fill={colors.stroke} />
       </marker>
       <filter id={`${arrowId}-shadow`} x="-10%" y="-10%" width="120%" height="130%">
         <feDropShadow dx="0" dy="5" floodColor="#172033" floodOpacity="0.12" stdDeviation="4" />
@@ -871,13 +871,13 @@ function renderHub(diagram: ConceptDiagramData, colors: Palette, arrowId: string
     [704, 92],
     [78, 232],
     [704, 232],
-    [386, 270],
+    [386, 300],
   ];
   const centerBox = {x: 370, y: 132, w: 220, h: 112};
   return (
-    <svg viewBox={`0 0 ${width} 430`} preserveAspectRatio="xMinYMin meet">
+    <svg viewBox={`0 0 ${width} 520`} preserveAspectRatio="xMinYMin meet">
       <DiagramDefs arrowId={arrowId} colors={colors} />
-      <rect className="concept-diagram__paper" height="410" rx="18" width="944" x="8" y="8" />
+      <rect className="concept-diagram__paper" height="500" rx="18" width="944" x="8" y="8" />
       <SvgText className="concept-diagram__sketch-title" max={90} text={diagram.idea} x={36} y={42} />
       <NodeBox fill={colors.fill} height={centerBox.h} label={center} note={diagram.notes[nodes.indexOf(center)] ?? ''} stroke={colors.stroke} width={centerBox.w} x={centerBox.x} y={centerBox.y} />
       {around.map((node, index) => {
@@ -899,7 +899,7 @@ function renderHub(diagram: ConceptDiagramData, colors: Palette, arrowId: string
           </g>
         );
       })}
-      <ExampleNote colors={colors} diagram={diagram} y={332} />
+      <ExampleNote colors={colors} diagram={diagram} y={408} />
     </svg>
   );
 }

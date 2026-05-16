@@ -27,7 +27,7 @@ on day one.
 <div class="kapro-map">
   <div class="kapro-map-row">
     <div class="kapro-map-item"><strong>Greenfield</strong><span>Generate clusters, backends, sources, plans, and starter runs.</span></div>
-    <div class="kapro-arrow">|</div>
+    <div class="kapro-branch">|</div>
     <div class="kapro-map-item"><strong>Brownfield Observe</strong><span>Discover existing Argo/Flux objects without writes.</span></div>
     <div class="kapro-arrow">-></div>
     <div class="kapro-map-item"><strong>Brownfield Adopt</strong><span>Allow reviewed version-field writes.</span></div>
