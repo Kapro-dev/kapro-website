@@ -477,7 +477,7 @@ const layoutById: Record<DiagramId, LayoutKind> = {
   installation: 'stack',
   'kind-demo': 'loop',
   operations: 'matrix',
-  'hub-config': 'repo',
+  'hub-config': 'pipeline',
   'fleet-discovery': 'fanout',
   'e2e-validation': 'pipeline',
   argo: 'swimlane',
@@ -907,30 +907,37 @@ function renderHub(diagram: ConceptDiagramData, colors: Palette, arrowId: string
 }
 
 function renderRepo(diagram: ConceptDiagramData, colors: Palette, arrowId: string) {
-  const width = 960;
+  const width = 1040;
   const nodes = diagram.nodes.slice(0, 5);
-  const positions = nodes.map((node, index) => ({
-    node,
-    x: 372 + (index % 2) * 250,
-    y: 78 + Math.floor(index / 2) * 82,
-  }));
+  const folders = nodes.slice(0, 4);
+  const action = nodes[4] ?? 'apply';
   return (
-    <svg viewBox={`0 0 ${width} 430`} preserveAspectRatio="xMinYMin meet">
+    <svg viewBox={`0 0 ${width} 500`} preserveAspectRatio="xMinYMin meet">
       <DiagramDefs arrowId={arrowId} colors={colors} />
-      <rect className="concept-diagram__paper" height="410" rx="18" width="944" x="8" y="8" />
-      <SvgText className="concept-diagram__sketch-title" max={90} text={diagram.idea} x={36} y={42} />
-      <NodeBox fill={colors.fill} height={96} label="hub-config repo" note="reviewed source" stroke={colors.stroke} width={190} x={54} y={142} />
-      <ArrowLine arrowId={arrowId} stroke={colors.stroke} x1={256} x2={318} y1={190} y2={190} />
-      <line className="concept-diagram__arrow" stroke={colors.stroke} strokeLinecap="round" strokeWidth="2.4" x1="326" x2="326" y1="112" y2="276" />
-      {positions.map(({node, x, y}, index) => {
+      <rect className="concept-diagram__paper" height="480" rx="18" width="1024" x="8" y="8" />
+      <SvgText className="concept-diagram__sketch-title" max={104} text={diagram.idea} x={36} y={42} />
+
+      <NodeBox fill={colors.fill} height={118} label="hub-config repository" note="reviewed platform intent" stroke={colors.stroke} width={210} x={46} y={132} />
+      <ArrowLine arrowId={arrowId} stroke={colors.stroke} x1={270} x2={330} y1={191} y2={191} />
+
+      <rect fill="#f8fafc" height="242" rx="14" stroke="#cbd5e1" strokeWidth="2" width="388" x="344" y="86" />
+      <SvgText className="concept-diagram__lane-label" max={36} text="Repository folders" x={366} y={118} />
+      {folders.map((node, index) => {
+        const x = 366 + (index % 2) * 178;
+        const y = 140 + Math.floor(index / 2) * 86;
         return (
           <g key={node}>
-            <ArrowLine arrowId={arrowId} stroke={colors.stroke} x1={326} x2={x - 14} y1={y + 34} y2={y + 34} />
-            <NodeBox fill={index === 3 ? colors.fill : '#ffffff'} height={68} label={node} note={diagram.notes[index] ?? ''} stroke={index === 3 ? colors.stroke : '#334155'} width={198} x={x} y={y} />
+            <NodeBox fill={index === 2 ? colors.fill : '#ffffff'} height={66} label={node} note={diagram.notes[index] ?? ''} stroke={index === 2 ? colors.stroke : '#334155'} width={156} x={x} y={y} />
           </g>
         );
       })}
-      <ExampleNote colors={colors} diagram={diagram} y={326} />
+
+      <ArrowLine arrowId={arrowId} stroke={colors.stroke} x1={744} x2={804} y1={191} y2={191} />
+      <NodeBox fill="#ffffff" height={92} label={action} note={diagram.notes[4] ?? 'Hub sync'} stroke="#334155" width={176} x={818} y={145} />
+      <ElbowArrow arrowId={arrowId} dashed from={{x: 906, y: 250}} midY={284} stroke={colors.stroke} to={{x: 536, y: 332}} />
+      <NodeBox fill={colors.note} height={68} label="Kapro hub" note="CRDs reconcile" stroke={colors.stroke} width={210} x={430} y={334} />
+
+      <ExampleNote colors={colors} diagram={diagram} width={968} y={414} />
     </svg>
   );
 }

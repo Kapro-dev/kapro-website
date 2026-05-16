@@ -17,17 +17,19 @@ reviewable order.
 
 ## Layout
 
-```text
-clusters/       FleetCluster inventory
-backends/       BackendProfile objects for Argo, Flux, or external backends
-sources/        PromotionSource and PromotionUnit mappings
-promotionplans/      PromotionPlan rollout plans
-triggers/       PromotionTrigger automation rules
-plugins/        PluginRegistration manifests
-notifications/  NotificationProvider and NotificationPolicy manifests
-policies/       AgentPolicy and future policy manifests
-promotionruns/       PromotionRun objects
-```
+<div class="kapro-diagram">
+  <div class="kapro-grid">
+    <div class="kapro-card"><strong>clusters/</strong><span>FleetCluster inventory and labels.</span></div>
+    <div class="kapro-card"><strong>backends/</strong><span>BackendProfile objects for Argo, Flux, or plugins.</span></div>
+    <div class="kapro-card"><strong>sources/</strong><span>PromotionSource and PromotionUnit mappings.</span></div>
+    <div class="kapro-card"><strong>promotionplans/</strong><span>Reusable rollout stages, waves, and gates.</span></div>
+    <div class="kapro-card"><strong>triggers/</strong><span>PromotionTrigger automation rules.</span></div>
+    <div class="kapro-card"><strong>promotionruns/</strong><span>Reviewed version intent that starts movement.</span></div>
+    <div class="kapro-card"><strong>plugins/</strong><span>PluginRegistration manifests.</span></div>
+    <div class="kapro-card"><strong>notifications/</strong><span>Notification providers and policies.</span></div>
+    <div class="kapro-card"><strong>policies/</strong><span>AgentPolicy and future policy manifests.</span></div>
+  </div>
+</div>
 
 ## Flow
 
